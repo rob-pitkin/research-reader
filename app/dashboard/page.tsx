@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface Paper {
@@ -28,6 +29,7 @@ interface Paper {
 }
 
 export default function Page() {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Paper[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +47,11 @@ export default function Page() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleViewPDF = (pdfUrl: string, title: string) => {
+        console.log(pdfUrl, title);
+        router.push(`/viewer?url=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}`);
     };
 
     return (
@@ -97,14 +104,12 @@ export default function Page() {
                                         {paper.summary}
                                     </p>
                                     <div className="mt-4 flex gap-2">
-                                        <Button variant="outline" size="sm" asChild>
-                                            <a
-                                                href={paper.pdf}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                View PDF
-                                            </a>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleViewPDF(paper.pdf, paper.title)}
+                                        >
+                                            View PDF
                                         </Button>
                                         <Button variant="outline" size="sm" asChild>
                                             <a
