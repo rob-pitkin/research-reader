@@ -1,23 +1,8 @@
 "use client";
 
-import {
-    AudioWaveform,
-    BookOpen,
-    Bot,
-    Command,
-    Frame,
-    GalleryVerticalEnd,
-    Map as MapIcon,
-    PieChart,
-    Settings2,
-    SquareTerminal,
-} from "lucide-react";
-import type * as React from "react";
-
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
+import { Button } from "@/components/ui/button";
 import {
     Sidebar,
     SidebarContent,
@@ -25,149 +10,90 @@ import {
     SidebarHeader,
     SidebarRail,
 } from "@/components/ui/sidebar";
+import { BookOpen, Bot, GalleryVerticalEnd, Settings2, SquareTerminal } from "lucide-react";
+import Link from "next/link";
+import type * as React from "react";
 
-// This is sample data.
-const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
+const navLinks = [
+    {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: SquareTerminal,
     },
-    teams: [
-        {
-            name: "Acme Inc",
-            logo: GalleryVerticalEnd,
-            plan: "Enterprise",
-        },
-        {
-            name: "Acme Corp.",
-            logo: AudioWaveform,
-            plan: "Startup",
-        },
-        {
-            name: "Evil Corp.",
-            logo: Command,
-            plan: "Free",
-        },
-    ],
-    navMain: [
-        {
-            title: "Playground",
-            url: "#",
-            icon: SquareTerminal,
-            isActive: true,
-            items: [
-                {
-                    title: "History",
-                    url: "#",
-                },
-                {
-                    title: "Starred",
-                    url: "#",
-                },
-                {
-                    title: "Settings",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Models",
-            url: "#",
-            icon: Bot,
-            items: [
-                {
-                    title: "Genesis",
-                    url: "#",
-                },
-                {
-                    title: "Explorer",
-                    url: "#",
-                },
-                {
-                    title: "Quantum",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Documentation",
-            url: "#",
-            icon: BookOpen,
-            items: [
-                {
-                    title: "Introduction",
-                    url: "#",
-                },
-                {
-                    title: "Get Started",
-                    url: "#",
-                },
-                {
-                    title: "Tutorials",
-                    url: "#",
-                },
-                {
-                    title: "Changelog",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Settings",
-            url: "#",
-            icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: "#",
-                },
-                {
-                    title: "Team",
-                    url: "#",
-                },
-                {
-                    title: "Billing",
-                    url: "#",
-                },
-                {
-                    title: "Limits",
-                    url: "#",
-                },
-            ],
-        },
-    ],
-    projects: [
-        {
-            name: "Design Engineering",
-            url: "#",
-            icon: Frame,
-        },
-        {
-            name: "Sales & Marketing",
-            url: "#",
-            icon: PieChart,
-        },
-        {
-            name: "Travel",
-            url: "#",
-            icon: MapIcon,
-        },
-    ],
-};
+    {
+        title: "My Papers",
+        url: "/papers",
+        icon: BookOpen,
+    },
+    {
+        title: "ArXiv Search",
+        url: "/dashboard",
+        icon: Bot,
+    },
+    {
+        title: "Settings",
+        url: "/settings",
+        icon: Settings2,
+    },
+];
+
+const collections = [
+    {
+        name: "Collections",
+        url: "/collections",
+        icon: BookOpen,
+    },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <TeamSwitcher teams={data.teams} />
+                <TeamSwitcher
+                    teams={[{ name: "Research Group", logo: GalleryVerticalEnd, plan: "Pro" }]}
+                />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
-                <NavProjects projects={data.projects} />
+                <nav className="flex flex-col gap-1 py-2">
+                    {navLinks.map((item) => (
+                        <Button
+                            key={item.title}
+                            asChild
+                            variant="ghost"
+                            className="justify-start gap-2 w-full"
+                        >
+                            <Link href={item.url}>
+                                <item.icon className="w-4 h-4" />
+                                {item.title}
+                            </Link>
+                        </Button>
+                    ))}
+                </nav>
+                <div className="mt-6">
+                    <div className="text-xs font-semibold text-muted-foreground px-4 mb-2">
+                        Collections
+                    </div>
+                    <nav className="flex flex-col gap-1">
+                        {collections.map((col) => (
+                            <Button
+                                key={col.name}
+                                asChild
+                                variant="ghost"
+                                className="justify-start gap-2 w-full"
+                            >
+                                <Link href={col.url}>
+                                    <col.icon className="w-4 h-4" />
+                                    {col.name}
+                                </Link>
+                            </Button>
+                        ))}
+                    </nav>
+                </div>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={data.user} />
+                <NavUser
+                    user={{ name: "shadcn", email: "m@example.com", avatar: "/avatars/shadcn.jpg" }}
+                />
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>
