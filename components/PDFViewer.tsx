@@ -5,13 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
 // Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
 interface PDFViewerProps {
     url: string;
@@ -21,6 +21,8 @@ export function PDFViewer({ url }: PDFViewerProps) {
     const [numPages, setNumPages] = useState<number>(0);
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [scale, setScale] = useState<number>(1.0);
+
+    console.log("url", url);
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);

@@ -4,10 +4,8 @@ import { AppSidebar } from "@/components/app-sidebar";
 import {
     Breadcrumb,
     BreadcrumbItem,
-    BreadcrumbLink,
     BreadcrumbList,
     BreadcrumbPage,
-    BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,10 +20,10 @@ interface Paper {
     id: string;
     title: string;
     authors: string[];
+    categories: string[];
     summary: string;
     published: string;
-    pdf: string;
-    url: string;
+    links: { type: string; href: string }[];
 }
 
 export default function Page() {
@@ -107,13 +105,25 @@ export default function Page() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => handleViewPDF(paper.pdf, paper.title)}
+                                            onClick={() => {
+                                                console.log("paper", paper);
+                                                handleViewPDF(
+                                                    paper.links.find(
+                                                        (link) => link.type === "application/pdf",
+                                                    )?.href ?? "",
+                                                    paper.title,
+                                                );
+                                            }}
                                         >
                                             View PDF
                                         </Button>
                                         <Button variant="outline" size="sm" asChild>
                                             <a
-                                                href={paper.url}
+                                                href={
+                                                    paper.links.find(
+                                                        (link) => link.type === "text/html",
+                                                    )?.href ?? ""
+                                                }
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
