@@ -12,6 +12,6 @@
         "useIgnoreFile": true
     },
     "files": {
-        "ignore": []
+        "ignore": ["public/pdf.worker.min.mjs"]
     }
 }
