@@ -27,7 +27,7 @@ const navLinks = [
     },
     {
         title: "ArXiv Search",
-        url: "/dashboard",
+        url: "/search",
         icon: Bot,
     },
     {
