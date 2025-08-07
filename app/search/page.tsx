@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Search } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 interface Paper {
     id: string;
@@ -28,16 +28,27 @@ interface Paper {
 
 export default function SearchPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Paper[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSearch = async () => {
-        if (!searchQuery.trim()) return;
+    // Handle URL search params and auto-execute search
+    useEffect(() => {
+        const query = searchParams.get("q");
+        if (query) {
+            setSearchQuery(query);
+            // Auto-execute search with the URL parameter
+            executeSearch(query);
+        }
+    }, [searchParams]);
+
+    const executeSearch = async (query: string) => {
+        if (!query.trim()) return;
 
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/arxiv/search?q=${encodeURIComponent(searchQuery)}`);
+            const response = await fetch(`/api/arxiv/search?q=${encodeURIComponent(query)}`);
             const data = await response.json();
             setSearchResults(data);
         } catch (error) {
@@ -45,6 +56,14 @@ export default function SearchPage() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSearch = async () => {
+        if (searchQuery.trim()) {
+            // Update URL to reflect the search query
+            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+        }
+        executeSearch(searchQuery);
     };
 
     const handleViewPDF = (pdfUrl: string, title: string) => {
@@ -98,8 +117,7 @@ export default function SearchPage() {
                                 <CardHeader>
                                     <CardTitle className="text-lg">{paper.title}</CardTitle>
                                     <CardDescription>
-                                        {paper.authors.join(", ")} •{" "}
-                                        {formatDate(paper.published)}
+                                        {paper.authors.join(", ")} • {formatDate(paper.published)}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -139,8 +157,6 @@ export default function SearchPage() {
                             </Card>
                         ))}
                     </div>
-
-
                 </div>
             </SidebarInset>
         </SidebarProvider>
