@@ -12,10 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
-import { Search, ExternalLink, FileText, Calendar, Users } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface Paper {
     id: string;
@@ -29,34 +28,18 @@ interface Paper {
 
 export default function SearchPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Paper[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Get initial query from URL params
-    useEffect(() => {
-        const query = searchParams.get("q");
-        if (query) {
-            setSearchQuery(query);
-            handleSearch(query);
-        }
-    }, [searchParams]);
-
-    const handleSearch = async (query?: string) => {
-        const queryToUse = query || searchQuery;
-        if (!queryToUse.trim()) return;
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) return;
 
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/arxiv/search?q=${encodeURIComponent(queryToUse)}`);
+            const response = await fetch(`/api/arxiv/search?q=${encodeURIComponent(searchQuery)}`);
             const data = await response.json();
             setSearchResults(data);
-
-            // Update URL with search query
-            const url = new URL(window.location.href);
-            url.searchParams.set("q", queryToUse);
-            window.history.replaceState({}, "", url.toString());
         } catch (error) {
             console.error("Error searching papers:", error);
         } finally {
@@ -69,11 +52,7 @@ export default function SearchPage() {
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
+        return new Date(dateString).toLocaleDateString();
     };
 
     return (
@@ -90,104 +69,46 @@ export default function SearchPage() {
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>ArXiv Search</BreadcrumbPage>
+                                    <BreadcrumbPage>Research Papers</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
                     </div>
                 </header>
 
-                <div className="flex flex-1 flex-col gap-6 p-6 pt-4">
-                    {/* Search Header */}
-                    <div className="space-y-2">
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            Search Research Papers
-                        </h1>
-                        <p className="text-muted-foreground">
-                            Discover and explore academic papers from the ArXiv repository
-                        </p>
-                    </div>
-
-                    {/* Search Bar */}
+                <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                     <div className="flex gap-2">
                         <Input
-                            placeholder="Search for research papers... (e.g., 'machine learning', 'quantum computing')"
+                            placeholder="Search for research papers..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            className="flex-1 h-12 text-lg"
+                            className="flex-1"
                         />
-                        <Button onClick={() => handleSearch()} disabled={isLoading} size="lg">
+                        <Button onClick={handleSearch} disabled={isLoading}>
                             <Search className="h-4 w-4 mr-2" />
-                            {isLoading ? "Searching..." : "Search"}
+                            Search
                         </Button>
                     </div>
 
-                    {/* Results Count */}
-                    {searchResults.length > 0 && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>Found {searchResults.length} results</span>
-                            {searchQuery && <span>for "{searchQuery}"</span>}
-                        </div>
-                    )}
-
                     {/* Search Results */}
-                    <div className="grid gap-6">
+                    <div className="grid gap-4">
                         {searchResults.map((paper) => (
-                            <Card key={paper.id} className="hover:shadow-md transition-shadow">
-                                <CardHeader className="pb-4">
-                                    <div className="space-y-3">
-                                        <CardTitle className="text-xl leading-7 hover:text-blue-600 transition-colors">
-                                            {paper.title}
-                                        </CardTitle>
-
-                                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                                            <div className="flex items-center gap-1">
-                                                <Users className="h-4 w-4" />
-                                                <span>{paper.authors.slice(0, 3).join(", ")}</span>
-                                                {paper.authors.length > 3 && (
-                                                    <span>
-                                                        and {paper.authors.length - 3} others
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <div className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4" />
-                                                <span>{formatDate(paper.published)}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Categories */}
-                                        {paper.categories && paper.categories.length > 0 && (
-                                            <div className="flex flex-wrap gap-2">
-                                                {paper.categories.slice(0, 4).map((category) => (
-                                                    <Badge
-                                                        key={category}
-                                                        variant="secondary"
-                                                        className="text-xs"
-                                                    >
-                                                        {category}
-                                                    </Badge>
-                                                ))}
-                                                {paper.categories.length > 4 && (
-                                                    <Badge variant="outline" className="text-xs">
-                                                        +{paper.categories.length - 4} more
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
+                            <Card key={paper.id}>
+                                <CardHeader>
+                                    <CardTitle className="text-lg">{paper.title}</CardTitle>
+                                    <CardDescription>
+                                        {paper.authors.join(", ")} •{" "}
+                                        {formatDate(paper.published)}
+                                    </CardDescription>
                                 </CardHeader>
-
-                                <CardContent className="pt-0">
-                                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4 leading-relaxed">
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
                                         {paper.summary}
                                     </p>
-
-                                    <div className="flex gap-2 flex-wrap">
+                                    <div className="mt-4 flex gap-2">
                                         <Button
-                                            variant="default"
+                                            variant="outline"
                                             size="sm"
                                             onClick={() => {
                                                 const pdfLink = paper.links.find(
@@ -197,12 +118,9 @@ export default function SearchPage() {
                                                     handleViewPDF(pdfLink.href, paper.title);
                                                 }
                                             }}
-                                            className="gap-2"
                                         >
-                                            <FileText className="h-4 w-4" />
                                             View PDF
                                         </Button>
-
                                         <Button variant="outline" size="sm" asChild>
                                             <a
                                                 href={
@@ -212,9 +130,7 @@ export default function SearchPage() {
                                                 }
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="gap-2"
                                             >
-                                                <ExternalLink className="h-4 w-4" />
                                                 View on ArXiv
                                             </a>
                                         </Button>
@@ -224,42 +140,7 @@ export default function SearchPage() {
                         ))}
                     </div>
 
-                    {/* No Results Message */}
-                    {searchResults.length === 0 && searchQuery && !isLoading && (
-                        <div className="text-center py-12">
-                            <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
-                                <Search className="h-12 w-12 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-lg font-semibold mb-2">No papers found</h3>
-                            <p className="text-muted-foreground mb-4">
-                                Try adjusting your search terms or exploring different keywords
-                            </p>
-                            <Button variant="outline" onClick={() => setSearchQuery("")}>
-                                Clear Search
-                            </Button>
-                        </div>
-                    )}
 
-                    {/* Loading State */}
-                    {isLoading && (
-                        <div className="grid gap-6">
-                            {[1, 2, 3].map((i) => (
-                                <Card key={i} className="animate-pulse">
-                                    <CardHeader>
-                                        <div className="h-6 bg-muted rounded w-3/4 mb-2" />
-                                        <div className="h-4 bg-muted rounded w-1/2" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-2">
-                                            <div className="h-4 bg-muted rounded" />
-                                            <div className="h-4 bg-muted rounded w-5/6" />
-                                            <div className="h-4 bg-muted rounded w-4/6" />
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
                 </div>
             </SidebarInset>
         </SidebarProvider>
