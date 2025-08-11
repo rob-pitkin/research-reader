@@ -10,11 +10,14 @@ export async function GET(request: Request) {
     const author = searchParams.get("author");
     const sortBy = (searchParams.get("sortBy") as SortBy) || "submittedDate";
     const sortOrder = (searchParams.get("sortOrder") as SortOrder) || "descending";
-    const maxResults = parseInt(searchParams.get("maxResults") || "10", 10);
-    const start = parseInt(searchParams.get("start") || "0", 10);
+    const maxResults = Number.parseInt(searchParams.get("maxResults") || "10", 10);
+    const start = Number.parseInt(searchParams.get("start") || "0", 10);
 
     if (!query && !author) {
-        return NextResponse.json({ error: "At least one of 'q' or 'author' query parameter is required" }, { status: 400 });
+        return NextResponse.json(
+            { error: "At least one of 'q' or 'author' query parameter is required" },
+            { status: 400 },
+        );
     }
 
     const includeParams = [];
