@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AddToCollection } from "@/components/add-to-collection";
 import { StarButton } from "@/components/star-button";
 import { useStarredPapers } from "@/hooks/use-starred-papers";
 import { createClient } from "@/lib/supabase/client";
@@ -281,16 +282,19 @@ function SearchComponent() {
                                         </a>
                                     </Button>
                                     {user && (
-                                        <StarButton
-                                            isStarred={starredPaperIds.includes(paper.id)}
-                                            onClick={() => {
-                                                if (starredPaperIds.includes(paper.id)) {
-                                                    removeStar(paper.id);
-                                                } else {
-                                                    addStar(paper);
-                                                }
-                                            }}
-                                        />
+                                        <>
+                                            <StarButton
+                                                isStarred={starredPaperIds.includes(paper.id)}
+                                                onClick={() => {
+                                                    if (starredPaperIds.includes(paper.id)) {
+                                                        removeStar(paper.id);
+                                                    } else {
+                                                        addStar(paper);
+                                                    }
+                                                }}
+                                            />
+                                            <AddToCollection user={user} paper={paper} />
+                                        </>
                                     )}
                                 </div>
                             </CardContent>
