@@ -1,9 +1,16 @@
 import arxiv from "arxiv-api";
 import { NextResponse } from "next/server";
 
+type SortBy = "relevance" | "lastUpdatedDate" | "submittedDate";
+type SortOrder = "ascending" | "descending";
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q");
+    const sortBy = (searchParams.get("sortBy") as SortBy) || "submittedDate";
+    const sortOrder = (searchParams.get("sortOrder") as SortOrder) || "descending";
+    const maxResults = Number.parseInt(searchParams.get("maxResults") || "10", 10);
+    const start = Number.parseInt(searchParams.get("start") || "0", 10);
 
     if (!query) {
         return NextResponse.json({ error: "Query parameter is required" }, { status: 400 });
@@ -16,8 +23,10 @@ export async function GET(request: Request) {
                     include: [{ name: query }],
                 },
             ],
-            start: 0,
-            maxResults: 10,
+            sortBy,
+            sortOrder,
+            start,
+            maxResults,
         });
 
         return NextResponse.json(papers);

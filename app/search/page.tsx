@@ -10,6 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Search } from "lucide-react";
@@ -32,23 +40,38 @@ export default function SearchPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Paper[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [sortBy, setSortBy] = useState("submittedDate");
+    const [sortOrder, setSortOrder] = useState("descending");
+    const [maxResults, setMaxResults] = useState("10");
 
-    // Handle URL search params and auto-execute search
     useEffect(() => {
         const query = searchParams.get("q");
+        const sortByParam = searchParams.get("sortBy") || "submittedDate";
+        const sortOrderParam = searchParams.get("sortOrder") || "descending";
+        const maxResultsParam = searchParams.get("maxResults") || "10";
+
+        setSortBy(sortByParam);
+        setSortOrder(sortOrderParam);
+        setMaxResults(maxResultsParam);
+
         if (query) {
             setSearchQuery(query);
-            // Auto-execute search with the URL parameter
-            executeSearch(query);
+            executeSearch(query, sortByParam, sortOrderParam, maxResultsParam);
         }
     }, [searchParams]);
 
-    const executeSearch = async (query: string) => {
+    const executeSearch = async (
+        query: string,
+        sortBy: string,
+        sortOrder: string,
+        maxResults: string,
+    ) => {
         if (!query.trim()) return;
 
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/arxiv/search?q=${encodeURIComponent(query)}`);
+            const params = new URLSearchParams({ q: query, sortBy, sortOrder, maxResults });
+            const response = await fetch(`/api/arxiv/search?${params.toString()}`);
             const data = await response.json();
             setSearchResults(data);
         } catch (error) {
@@ -58,12 +81,16 @@ export default function SearchPage() {
         }
     };
 
-    const handleSearch = async () => {
+    const handleSearch = () => {
         if (searchQuery.trim()) {
-            // Update URL to reflect the search query
-            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+            const params = new URLSearchParams({
+                q: searchQuery,
+                sortBy,
+                sortOrder,
+                maxResults,
+            });
+            router.push(`/search?${params.toString()}`);
         }
-        executeSearch(searchQuery);
     };
 
     const handleViewPDF = (pdfUrl: string, title: string) => {
@@ -96,18 +123,62 @@ export default function SearchPage() {
                 </header>
 
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                    <div className="flex gap-2">
-                        <Input
-                            placeholder="Search for research papers..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            className="flex-1"
-                        />
-                        <Button onClick={handleSearch} disabled={isLoading}>
-                            <Search className="h-4 w-4 mr-2" />
-                            Search
-                        </Button>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder="Search for research papers..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                                className="flex-1"
+                            />
+                            <Button onClick={handleSearch} disabled={isLoading}>
+                                <Search className="h-4 w-4 mr-2" />
+                                Search
+                            </Button>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="sortBy">Sort by</Label>
+                                <Select value={sortBy} onValueChange={setSortBy}>
+                                    <SelectTrigger id="sortBy" className="w-[150px]">
+                                        <SelectValue placeholder="Sort by" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="submittedDate">Newest</SelectItem>
+                                        <SelectItem value="lastUpdatedDate">
+                                            Last Updated
+                                        </SelectItem>
+                                        <SelectItem value="relevance">Relevance</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="sortOrder">Order</Label>
+                                <Select value={sortOrder} onValueChange={setSortOrder}>
+                                    <SelectTrigger id="sortOrder" className="w-[130px]">
+                                        <SelectValue placeholder="Order" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="descending">Descending</SelectItem>
+                                        <SelectItem value="ascending">Ascending</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="maxResults">Results</Label>
+                                <Select value={maxResults} onValueChange={setMaxResults}>
+                                    <SelectTrigger id="maxResults" className="w-[90px]">
+                                        <SelectValue placeholder="Count" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="25">25</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Search Results */}
