@@ -20,6 +20,10 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { StarButton } from "@/components/star-button";
+import { useStarredPapers } from "@/hooks/use-starred-papers";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 import { Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
@@ -45,6 +49,18 @@ function SearchComponent() {
     const [sortOrder, setSortOrder] = useState("descending");
     const [maxResults, setMaxResults] = useState("10");
     const [page, setPage] = useState(1);
+    const [user, setUser] = useState<User | null>(null);
+    const supabase = createClient();
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data } = await supabase.auth.getUser();
+            setUser(data.user);
+        };
+        fetchUser();
+    }, [supabase]);
+
+    const { starredPaperIds, addStar, removeStar } = useStarredPapers(user);
 
     useEffect(() => {
         const query = searchParams.get("q");
@@ -264,6 +280,18 @@ function SearchComponent() {
                                             View on ArXiv
                                         </a>
                                     </Button>
+                                    {user && (
+                                        <StarButton
+                                            isStarred={starredPaperIds.includes(paper.id)}
+                                            onClick={() => {
+                                                if (starredPaperIds.includes(paper.id)) {
+                                                    removeStar(paper.id);
+                                                } else {
+                                                    addStar(paper);
+                                                }
+                                            }}
+                                        />
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>

@@ -17,10 +17,13 @@ import { Suspense } from "react";
 
 function PDFViewerComponent() {
     const searchParams = useSearchParams();
-    const pdfUrl = searchParams.get("url");
+    const pdfUrl = searchParams.get("url"); // This is the original, encoded arXiv URL
     const title = searchParams.get("title") || "PDF Viewer";
 
-    if (!pdfUrl) {
+    // We now pass the proxied URL to the viewer component
+    const viewerUrl = pdfUrl ? `/api/proxy?url=${pdfUrl}` : null;
+
+    if (!viewerUrl) {
         return (
             <div className="flex items-center justify-center h-full">
                 <p className="text-muted-foreground">No PDF URL provided</p>
@@ -53,7 +56,7 @@ function PDFViewerComponent() {
                 </div>
             </header>
             <div className="flex-1 p-4">
-                <PDFViewer url={pdfUrl} />
+                <PDFViewer url={viewerUrl} />
             </div>
         </>
     );
