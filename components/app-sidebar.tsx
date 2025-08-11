@@ -5,16 +5,17 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
-    SidebarHeader,
-    SidebarRail,
     SidebarMenu,
     SidebarMenuItem,
     SidebarMenuButton,
-    useSidebar,
+    SidebarRail,
 } from "@/components/ui/sidebar";
-import { BookOpen, Bot, Settings2, SquareTerminal } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import { BookOpen, Bot, LogIn, Settings2, SquareTerminal } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
+import { useState, useEffect } from "react";
 
 const navLinks = [
     {
@@ -48,6 +49,30 @@ const collections = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const supabase = createClient();
+    const [user, setUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            setUser(user);
+        };
+
+        fetchUser();
+
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [supabase]);
+
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarContent className="mt-2">
@@ -77,9 +102,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenu>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser
-                    user={{ name: "shadcn", email: "m@example.com", avatar: "/avatars/shadcn.jpg" }}
-                />
+                {user ? (
+                    <NavUser user={user} />
+                ) : (
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <Link href="/login">
+                                    <LogIn className="w-4 h-4" />
+                                    <span>Login</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                )}
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>
