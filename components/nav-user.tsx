@@ -1,5 +1,6 @@
 "use client";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -72,6 +73,7 @@ export function NavUser({ user }: { user: User }) {
                                     <span className="truncate font-medium">{userName}</span>
                                     <span className="truncate text-xs">{user.email}</span>
                                 </div>
+                                <ThemeToggle />
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
