@@ -1,12 +1,7 @@
 "use client";
 
 import { AppSidebar } from "@/components/app-sidebar";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbList,
-    BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -154,26 +149,11 @@ function SearchComponent() {
 
     return (
         <>
-            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                <div className="flex items-center gap-2 px-4">
-                    <SidebarTrigger className="-ml-1" />
-                    <Separator
-                        orientation="vertical"
-                        className="mr-2 data-[orientation=vertical]:h-4"
-                    />
-                    <Breadcrumb>
-                        <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbPage>Research Papers</BreadcrumbPage>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
-                </div>
-            </header>
+            <PageHeader breadcrumb={[{ label: "Research Papers" }]} />
 
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                 <div className="flex flex-col gap-4">
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <Input
                             placeholder="Search all fields..."
                             value={searchQuery}
@@ -186,7 +166,7 @@ function SearchComponent() {
                             Search
                         </Button>
                     </div>
-                    <div className="flex items-center gap-4 text-sm">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <Label htmlFor="author">Author</Label>
                             <Input
@@ -240,7 +220,7 @@ function SearchComponent() {
                 </div>
 
                 {/* Search Results */}
-                <div className="grid gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {searchResults.map((paper) => (
                         <Card key={paper.id}>
                             <CardHeader>

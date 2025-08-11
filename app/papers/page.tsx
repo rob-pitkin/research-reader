@@ -1,13 +1,8 @@
 "use client";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { PageHeader } from "@/components/page-header";
 import { StarButton } from "@/components/star-button";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbList,
-    BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -97,29 +92,14 @@ export default function StarredPapersPage() {
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                    <div className="flex items-center gap-2 px-4">
-                        <SidebarTrigger className="-ml-1" />
-                        <Separator
-                            orientation="vertical"
-                            className="mr-2 data-[orientation=vertical]:h-4"
-                        />
-                        <Breadcrumb>
-                            <BreadcrumbList>
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage>My Papers</BreadcrumbPage>
-                                </BreadcrumbItem>
-                            </BreadcrumbList>
-                        </Breadcrumb>
-                    </div>
-                </header>
+                <PageHeader breadcrumb={[{ label: "My Papers" }]} />
                 <main className="flex-1 p-4">
                     {loading ? (
                         <p>Loading your papers...</p>
                     ) : papers.length === 0 ? (
                         <p>You haven't starred any papers yet.</p>
                     ) : (
-                        <div className="grid gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {papers.map((paper) => (
                                 <Card key={paper.paper_id}>
                                     <CardHeader>

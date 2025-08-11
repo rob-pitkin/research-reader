@@ -1,236 +1,296 @@
 "use client";
 
 import { AppSidebar } from "@/components/app-sidebar";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbList,
-    BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
-import {
-    Search,
-    TrendingUp,
-    Clock,
-    BookOpen,
-    Users,
-    Calendar,
-    FileText,
-    ExternalLink,
-    Star,
-    Eye,
-    Download,
-} from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, Star, Folder, User as UserIcon } from "lucide-react";
 
-interface Paper {
-    id: string;
+interface StarredPaper {
+    id: number;
+    paper_id: string;
     title: string;
-    authors: string[];
-    categories: string[];
     summary: string;
-    published: string;
-    links: { type: string; href: string }[];
+    authors: string[];
+    pdf_url: string | null;
+    published_date: string | null;
+    created_at: string;
 }
 
-interface QuickStat {
-    title: string;
-    value: string;
-    description: string;
-    icon: React.ComponentType<{ className?: string }>;
-    trend?: string;
+interface Collection {
+    id: string;
+    name: string;
+    description: string | null;
+    created_at: string;
 }
 
 export default function DashboardPage() {
+    const supabase = createClient();
     const router = useRouter();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [recentPapers, setRecentPapers] = useState<Paper[]>([]);
-    const [trendingPapers, setTrendingPapers] = useState<Paper[]>([]);
-    const [isLoadingRecent, setIsLoadingRecent] = useState(true);
-    const [isLoadingTrending, setIsLoadingTrending] = useState(true);
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [starredPapers, setStarredPapers] = useState<StarredPaper[]>([]);
+    const [collections, setCollections] = useState<Collection[]>([]);
+    const [quickSearchQuery, setQuickSearchQuery] = useState("");
+    const [totalStarredPapers, setTotalStarredPapers] = useState(0);
+    const [totalCollections, setTotalCollections] = useState(0);
 
-    const quickStats: QuickStat[] = [
-        {
-            title: "Papers Read",
-            value: "24",
-            description: "This month",
-            icon: BookOpen,
-            trend: "+12%",
-        },
-        {
-            title: "Research Hours",
-            value: "48h",
-            description: "Time spent reading",
-            icon: Clock,
-            trend: "+8%",
-        },
-        {
-            title: "Saved Papers",
-            value: "156",
-            description: "In your library",
-            icon: Star,
-        },
-        {
-            title: "Collections",
-            value: "8",
-            description: "Organized topics",
-            icon: Users,
-        },
-    ];
-
-    const handleSearch = () => {
-        if (searchQuery.trim()) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-        } else {
-            router.push("/search");
+    const handleQuickSearch = () => {
+        if (quickSearchQuery.trim()) {
+            router.push(`/search?q=${encodeURIComponent(quickSearchQuery)}`);
         }
     };
 
-    const handleViewPDF = (pdfUrl: string, title: string) => {
-        router.push(`/viewer?url=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}`);
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            setLoading(true);
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (!user) {
+                router.push("/login");
+                return;
+            }
+            setUser(user);
+
+            // Fetch counts
+            const { count: starredCount, error: starredCountError } = await supabase
+                .from("papers")
+                .select("count", { count: "exact" })
+                .eq("user_id", user.id);
+            if (starredCountError)
+                console.error("Error fetching starred count:", starredCountError);
+            else setTotalStarredPapers(starredCount || 0);
+
+            const { count: collectionsCount, error: collectionsCountError } = await supabase
+                .from("collections")
+                .select("count", { count: "exact" })
+                .eq("user_id", user.id);
+            if (collectionsCountError)
+                console.error("Error fetching collections count:", collectionsCountError);
+            else setTotalCollections(collectionsCount || 0);
+
+            // Fetch recently starred papers
+            const { data: papersData, error: papersError } = await supabase
+                .from("papers")
+                .select("*")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+                .limit(5);
+
+            if (papersError) {
+                console.error("Error fetching starred papers:", papersError);
+            } else {
+                setStarredPapers(papersData as StarredPaper[]);
+            }
+
+            // Fetch recently created collections
+            const { data: collectionsData, error: collectionsError } = await supabase
+                .from("collections")
+                .select("*")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+                .limit(5);
+
+            if (collectionsError) {
+                console.error("Error fetching collections:", collectionsError);
+            } else {
+                setCollections(collectionsData as Collection[]);
+            }
+
+            setLoading(false);
+        };
+
+        fetchDashboardData();
+    }, [supabase, router]);
+
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return "N/A";
+        return new Date(dateString).toLocaleDateString();
     };
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = Math.abs(now.getTime() - date.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 1) return "1 day ago";
-        if (diffDays < 7) return `${diffDays} days ago`;
-        if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
-        return date.toLocaleDateString();
-    };
+    if (loading) {
+        return (
+            <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                    <PageHeader breadcrumb={[{ label: "Dashboard" }]} />
+                    <main className="flex-1 p-4">
+                        <p>Loading your personalized dashboard...</p>
+                    </main>
+                </SidebarInset>
+            </SidebarProvider>
+        );
+    }
 
     return (
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                    <div className="flex items-center gap-2 px-4">
-                        <SidebarTrigger className="-ml-1" />
-                        <Separator
-                            orientation="vertical"
-                            className="mr-2 data-[orientation=vertical]:h-4"
+                <PageHeader breadcrumb={[{ label: "Dashboard" }]} />
+                <main className="flex-1 p-4">
+                    <h2 className="text-2xl font-bold mb-4">Welcome, {user?.email || "User"}!</h2>
+
+                    <div className="flex gap-2 mb-8">
+                        <Input
+                            placeholder="Quick search for papers..."
+                            value={quickSearchQuery}
+                            onChange={(e) => setQuickSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleQuickSearch()}
+                            className="flex-1"
                         />
-                        <Breadcrumb>
-                            <BreadcrumbList>
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage>Dashboard</BreadcrumbPage>
-                                </BreadcrumbItem>
-                            </BreadcrumbList>
-                        </Breadcrumb>
-                    </div>
-                </header>
-
-                <div className="flex flex-1 flex-col gap-6 p-6 pt-4">
-                    {/* Welcome Section */}
-                    <div className="space-y-2">
-                        <h1 className="text-3xl font-bold tracking-tight">Welcome back!</h1>
-                        <p className="text-muted-foreground">
-                            Here's your research overview and latest discoveries
-                        </p>
+                        <Button onClick={handleQuickSearch}>
+                            <Search className="h-4 w-4" />
+                        </Button>
                     </div>
 
-                    {/* Quick Search */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Search className="h-5 w-5" />
-                                Quick Search
-                            </CardTitle>
-                            <CardDescription>
-                                Search for research papers across ArXiv
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex gap-2">
-                                <Input
-                                    placeholder="What are you researching today?"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                                    className="flex-1"
-                                />
-                                <Button onClick={handleSearch}>
-                                    <Search className="h-4 w-4 mr-2" />
-                                    Search
+                    {/* Stat Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Total Starred Papers
+                                </CardTitle>
+                                <Star className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{totalStarredPapers}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Total Collections
+                                </CardTitle>
+                                <Folder className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{totalCollections}</div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Quick Access Buttons */}
+                    <section className="mb-8">
+                        <h3 className="text-xl font-semibold mb-4">Quick Actions</h3>
+                        <div className="flex flex-wrap gap-4">
+                            <Link href="/settings" passHref>
+                                <Button variant="outline">
+                                    <UserIcon className="h-4 w-4 mr-2" />
+                                    Select an Avatar
                                 </Button>
+                            </Link>
+                            <Link href="/papers" passHref>
+                                <Button variant="outline">
+                                    <Star className="h-4 w-4 mr-2" />
+                                    View Starred Papers
+                                </Button>
+                            </Link>
+                            <Link href="/collections" passHref>
+                                <Button variant="outline">
+                                    <Folder className="h-4 w-4 mr-2" />
+                                    View Collections
+                                </Button>
+                            </Link>
+                        </div>
+                    </section>
+
+                    <section className="mb-8">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-semibold">Recently Starred Papers</h3>
+                            <Link href="/papers" passHref>
+                                <Button variant="link">View All</Button>
+                            </Link>
+                        </div>
+                        {starredPapers.length === 0 ? (
+                            <p className="text-muted-foreground">
+                                You haven't starred any papers yet. Start by searching!
+                            </p>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {starredPapers.map((paper) => (
+                                    <Card key={paper.paper_id}>
+                                        <CardHeader>
+                                            <CardTitle className="text-lg line-clamp-1">
+                                                {paper.title}
+                                            </CardTitle>
+                                            <CardDescription>
+                                                {(paper.authors || []).join(", ")} •{" "}
+                                                {formatDate(paper.published_date)}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-muted-foreground line-clamp-2">
+                                                {paper.summary}
+                                            </p>
+                                            {paper.pdf_url && (
+                                                <Link
+                                                    href={`/viewer?url=${encodeURIComponent(paper.pdf_url)}&title=${encodeURIComponent(paper.title)}`}
+                                                    passHref
+                                                >
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="mt-2"
+                                                    >
+                                                        View PDF
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
                             </div>
-                        </CardContent>
-                    </Card>
+                        )}
+                    </section>
 
-                    {/* Quick Stats */}
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        {quickStats.map((stat) => (
-                            <Card key={stat.title}>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">
-                                        {stat.title}
-                                    </CardTitle>
-                                    <stat.icon className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{stat.value}</div>
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-xs text-muted-foreground">
-                                            {stat.description}
-                                        </p>
-                                        {stat.trend && (
-                                            <span className="text-xs text-green-600 font-medium">
-                                                {stat.trend}
-                                            </span>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-
-                    {/* Quick Actions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Quick Actions</CardTitle>
-                            <CardDescription>
-                                Common tasks to help with your research
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                                <Button variant="outline" className="h-20 flex-col gap-2" asChild>
-                                    <a href="/search">
-                                        <Search className="h-6 w-6" />
-                                        <span className="text-sm">Search Papers</span>
-                                    </a>
-                                </Button>
-                                <Button variant="outline" className="h-20 flex-col gap-2" asChild>
-                                    <a href="/papers">
-                                        <BookOpen className="h-6 w-6" />
-                                        <span className="text-sm">My Library</span>
-                                    </a>
-                                </Button>
-                                <Button variant="outline" className="h-20 flex-col gap-2" asChild>
-                                    <a href="/collections">
-                                        <Users className="h-6 w-6" />
-                                        <span className="text-sm">Collections</span>
-                                    </a>
-                                </Button>
-                                <Button variant="outline" className="h-20 flex-col gap-2" asChild>
-                                    <a href="/settings">
-                                        <Download className="h-6 w-6" />
-                                        <span className="text-sm">Export Data</span>
-                                    </a>
-                                </Button>
+                    <section>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-semibold">Your Collections</h3>
+                            <Link href="/collections" passHref>
+                                <Button variant="link">View All</Button>
+                            </Link>
+                        </div>
+                        {collections.length === 0 ? (
+                            <p className="text-muted-foreground">
+                                You haven't created any collections yet. Organize your papers!
+                            </p>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {collections.map((collection) => (
+                                    <Link
+                                        href={`/collections/${collection.id}`}
+                                        key={collection.id}
+                                    >
+                                        <Card className="hover:bg-muted/50 transition-colors">
+                                            <CardHeader>
+                                                <CardTitle className="line-clamp-1">
+                                                    {collection.name}
+                                                </CardTitle>
+                                                <CardDescription className="line-clamp-2">
+                                                    {collection.description || "No description"}
+                                                </CardDescription>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Created on {formatDate(collection.created_at)}
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                        )}
+                    </section>
+                </main>
             </SidebarInset>
         </SidebarProvider>
     );

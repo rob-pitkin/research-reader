@@ -38,7 +38,7 @@ export function AvatarSelector({ user, avatars }: AvatarSelectorProps) {
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-medium">Choose your avatar</h3>
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
                 {avatars.map((avatar) => (
                     <div
                         key={avatar}

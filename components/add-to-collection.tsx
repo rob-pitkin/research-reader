@@ -9,6 +9,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Check, FolderPlus } from "lucide-react";
@@ -148,12 +149,14 @@ export function AddToCollection({ user, paper }: AddToCollectionProps) {
                 </DropdownMenuContent>
             </DropdownMenu>
             {user && (
-                <CreateCollectionDialog
-                    user={user}
-                    isOpen={isCreateDialogOpen}
-                    onOpenChange={setIsCreateDialogOpen}
-                    onCreateSuccess={handleCreateSuccess}
-                />
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                    <CreateCollectionDialog
+                        user={user}
+                        isOpen={isCreateDialogOpen}
+                        onOpenChange={setIsCreateDialogOpen}
+                        onCreateSuccess={handleCreateSuccess}
+                    />
+                </Dialog>
             )}
         </>
     );

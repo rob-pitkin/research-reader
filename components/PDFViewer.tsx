@@ -44,7 +44,7 @@ export function PDFViewer({ url }: PDFViewerProps) {
 
     return (
         <Card className="w-full h-full flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex flex-wrap items-center justify-between p-4 border-b gap-2">
                 <div className="flex items-center gap-2">
                     <Button
                         variant="outline"
