@@ -38,39 +38,60 @@ export default function SearchPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState("");
+    const [authorQuery, setAuthorQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Paper[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [sortBy, setSortBy] = useState("submittedDate");
     const [sortOrder, setSortOrder] = useState("descending");
     const [maxResults, setMaxResults] = useState("10");
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
         const query = searchParams.get("q");
+        const author = searchParams.get("author");
         const sortByParam = searchParams.get("sortBy") || "submittedDate";
         const sortOrderParam = searchParams.get("sortOrder") || "descending";
         const maxResultsParam = searchParams.get("maxResults") || "10";
+        const pageParam = Number.parseInt(searchParams.get("page") || "1", 10);
 
         setSortBy(sortByParam);
         setSortOrder(sortOrderParam);
         setMaxResults(maxResultsParam);
+        setPage(pageParam);
+        setSearchQuery(query || "");
+        setAuthorQuery(author || "");
 
-        if (query) {
-            setSearchQuery(query);
-            executeSearch(query, sortByParam, sortOrderParam, maxResultsParam);
+        if (query || author) {
+            executeSearch(query, author, sortByParam, sortOrderParam, maxResultsParam, pageParam);
         }
     }, [searchParams]);
 
     const executeSearch = async (
-        query: string,
+        query: string | null,
+        author: string | null,
         sortBy: string,
         sortOrder: string,
         maxResults: string,
+        page: number,
     ) => {
-        if (!query.trim()) return;
+        if (!query?.trim() && !author?.trim()) return;
 
         setIsLoading(true);
         try {
-            const params = new URLSearchParams({ q: query, sortBy, sortOrder, maxResults });
+            const start = (page - 1) * Number.parseInt(maxResults, 10);
+            const params = new URLSearchParams({
+                sortBy,
+                sortOrder,
+                maxResults,
+                start: start.toString(),
+            });
+            if (query) {
+                params.set("q", query);
+            }
+            if (author) {
+                params.set("author", author);
+            }
+
             const response = await fetch(`/api/arxiv/search?${params.toString()}`);
             const data = await response.json();
             setSearchResults(data);
@@ -82,15 +103,28 @@ export default function SearchPage() {
     };
 
     const handleSearch = () => {
-        if (searchQuery.trim()) {
+        if (searchQuery.trim() || authorQuery.trim()) {
             const params = new URLSearchParams({
-                q: searchQuery,
                 sortBy,
                 sortOrder,
                 maxResults,
+                page: "1",
             });
+            if (searchQuery.trim()) {
+                params.set("q", searchQuery);
+            }
+            if (authorQuery.trim()) {
+                params.set("author", authorQuery);
+            }
             router.push(`/search?${params.toString()}`);
         }
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage < 1) return;
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("page", newPage.toString());
+        router.push(`/search?${params.toString()}`);
     };
 
     const handleViewPDF = (pdfUrl: string, title: string) => {
@@ -126,7 +160,7 @@ export default function SearchPage() {
                     <div className="flex flex-col gap-4">
                         <div className="flex gap-2">
                             <Input
-                                placeholder="Search for research papers..."
+                                placeholder="Search all fields..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -138,6 +172,17 @@ export default function SearchPage() {
                             </Button>
                         </div>
                         <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="author">Author</Label>
+                                <Input
+                                    id="author"
+                                    placeholder="e.g., Hinton, LeCun"
+                                    value={authorQuery}
+                                    onChange={(e) => setAuthorQuery(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                                    className="w-[180px]"
+                                />
+                            </div>
                             <div className="flex items-center gap-2">
                                 <Label htmlFor="sortBy">Sort by</Label>
                                 <Select value={sortBy} onValueChange={setSortBy}>
@@ -228,6 +273,29 @@ export default function SearchPage() {
                             </Card>
                         ))}
                     </div>
+
+                    {searchResults.length > 0 && (
+                        <div className="flex justify-center items-center gap-4 mt-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => handlePageChange(page - 1)}
+                                disabled={page <= 1 || isLoading}
+                            >
+                                Previous
+                            </Button>
+                            <span className="text-sm">Page {page}</span>
+                            <Button
+                                variant="outline"
+                                onClick={() => handlePageChange(page + 1)}
+                                disabled={
+                                    searchResults.length < Number.parseInt(maxResults, 10) ||
+                                    isLoading
+                                }
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </SidebarInset>
         </SidebarProvider>
