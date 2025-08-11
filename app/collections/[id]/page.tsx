@@ -29,7 +29,12 @@ interface CollectionPaper {
     published_date: string | null;
 }
 
-export default function SingleCollectionPage({ params }: { params: { id: string } }) {
+interface PageProps {
+    params: Promise<{ id: string }>;
+}
+
+export default async function SingleCollectionPage({ params: paramsPromise }: PageProps) {
+    const params = await paramsPromise;
     const supabase = createClient();
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
