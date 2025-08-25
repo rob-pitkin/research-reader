@@ -10,7 +10,7 @@ import { Suspense } from "react";
 
 function PDFViewerComponent() {
     const searchParams = useSearchParams();
-    const pdfUrl = searchParams.get("url"); // This is the original, encoded arXiv URL
+    const pdfUrl = searchParams.get("url"); // This is the original, encoded paper URL
     const title = searchParams.get("title") || "PDF Viewer";
 
     // We now pass the proxied URL to the viewer component

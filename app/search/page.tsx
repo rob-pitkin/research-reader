@@ -258,7 +258,7 @@ function SearchComponent() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            View on ArXiv
+                                            View Original Paper
                                         </a>
                                     </Button>
                                     {user && (

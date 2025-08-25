@@ -29,7 +29,7 @@ const navLinks = [
         icon: BookOpen,
     },
     {
-        title: "ArXiv Search",
+        title: "Paper Search",
         url: "/search",
         icon: Bot,
     },

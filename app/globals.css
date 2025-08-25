@@ -175,3 +175,9 @@
 body {
     @apply bg-muted/40;
 }
+
+/* Custom selection color for dark mode */
+.dark ::selection {
+  background-color: #0070f3;
+  color: #fff;
+}

@@ -70,14 +70,14 @@ export default function Home() {
                     <Card>
                         <CardHeader>
                             <Upload className="h-8 w-8 mb-2 text-primary" />
-                            <CardTitle>ArXiv Integration</CardTitle>
+                            <CardTitle>Paper Search</CardTitle>
                             <CardDescription>
-                                Access and import papers directly from ArXiv
+                                Access and import papers directly from academic sources
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-muted-foreground">
-                                Seamlessly browse and import papers from ArXiv using our API
+                                Seamlessly browse and import papers using our API
                                 integration. Stay up to date with the latest research in your field.
                             </p>
                         </CardContent>

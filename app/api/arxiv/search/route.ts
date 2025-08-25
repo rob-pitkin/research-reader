@@ -43,7 +43,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(papers);
     } catch (error) {
-        console.error("Error searching ArXiv:", error);
-        return NextResponse.json({ error: "Failed to search ArXiv" }, { status: 500 });
+        console.error("Error searching papers:", error);
+        return NextResponse.json({ error: "Failed to search papers" }, { status: 500 });
     }
 }
