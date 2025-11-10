@@ -13,6 +13,7 @@ interface Paper {
     summary: string;
     published: string;
     links: { type: string; href: string }[];
+    htmlUrl?: string;
 }
 
 export function useStarredPapers(user: User | null) {
@@ -53,6 +54,7 @@ export function useStarredPapers(user: User | null) {
             summary: paper.summary,
             authors: paper.authors,
             pdf_url: paper.links.find((link) => link.type === "application/pdf")?.href,
+            html_url: paper.htmlUrl,
             published_date: paper.published,
         });
 

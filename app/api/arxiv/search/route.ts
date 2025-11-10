@@ -41,7 +41,28 @@ export async function GET(request: Request) {
             maxResults,
         });
 
-        return NextResponse.json(papers);
+        const papersWithHtml = await Promise.all(
+            papers.map(async (paper) => {
+                const paperId = paper.id.split("/").pop()?.replace(/v\d+$/, "");
+                const htmlUrl = `https://arxiv.org/html/${paperId}`;
+
+                // Check if HTML version exists
+                let hasHtml = false;
+                try {
+                    const response = await fetch(htmlUrl, { method: "HEAD" });
+                    hasHtml = response.ok;
+                } catch {
+                    hasHtml = false;
+                }
+
+                return {
+                    ...paper,
+                    htmlUrl: hasHtml ? htmlUrl : undefined,
+                };
+            })
+        );
+
+        return NextResponse.json(papersWithHtml);
     } catch (error) {
         console.error("Error searching papers:", error);
         return NextResponse.json({ error: "Failed to search papers" }, { status: 500 });

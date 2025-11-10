@@ -32,6 +32,7 @@ interface Paper {
     summary: string;
     published: string;
     links: { type: string; href: string }[];
+    htmlUrl?: string;
 }
 
 function SearchComponent() {
@@ -139,8 +140,12 @@ function SearchComponent() {
         router.push(`/search?${params.toString()}`);
     };
 
-    const handleViewPDF = (pdfUrl: string, title: string) => {
-        router.push(`/viewer?url=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}`);
+    const handleViewPaper = (paperUrl: string, title: string, type: "pdf" | "html") => {
+        router.push(
+            `/viewer?url=${encodeURIComponent(paperUrl)}&title=${encodeURIComponent(
+                title,
+            )}&type=${type}`,
+        );
     };
 
     const formatDate = (dateString: string) => {
@@ -233,7 +238,7 @@ function SearchComponent() {
                                 <p className="text-sm text-muted-foreground line-clamp-2">
                                     {paper.summary}
                                 </p>
-                                <div className="mt-4 flex gap-2">
+                                <div className="mt-4 flex flex-wrap gap-2">
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -242,12 +247,29 @@ function SearchComponent() {
                                                 (link) => link.type === "application/pdf",
                                             );
                                             if (pdfLink) {
-                                                handleViewPDF(pdfLink.href, paper.title);
+                                                handleViewPaper(pdfLink.href, paper.title, "pdf");
                                             }
                                         }}
                                     >
                                         View PDF
                                     </Button>
+                                    {paper.htmlUrl && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                if (paper.htmlUrl) {
+                                                    handleViewPaper(
+                                                        paper.htmlUrl,
+                                                        paper.title,
+                                                        "html",
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            View HTML
+                                        </Button>
+                                    )}
                                     <Button variant="outline" size="sm" asChild>
                                         <a
                                             href={

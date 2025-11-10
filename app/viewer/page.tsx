@@ -1,25 +1,25 @@
 "use client";
 
+import { HTMLViewer } from "@/components/HTMLViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import { AppSidebar } from "@/components/app-sidebar";
 import { PageHeader } from "@/components/page-header";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-function PDFViewerComponent() {
+function ViewerComponent() {
     const searchParams = useSearchParams();
-    const pdfUrl = searchParams.get("url"); // This is the original, encoded paper URL
-    const title = searchParams.get("title") || "PDF Viewer";
+    const paperUrl = searchParams.get("url");
+    const title = searchParams.get("title") || "Paper Viewer";
+    const type = searchParams.get("type") || "pdf"; // Default to pdf
 
-    // We now pass the proxied URL to the viewer component
-    const viewerUrl = pdfUrl ? `/api/proxy?url=${pdfUrl}` : null;
+    const viewerUrl = paperUrl ? `/api/proxy?url=${paperUrl}` : null;
 
     if (!viewerUrl) {
         return (
             <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No PDF URL provided</p>
+                <p className="text-muted-foreground">No paper URL provided</p>
             </div>
         );
     }
@@ -33,19 +33,23 @@ function PDFViewerComponent() {
                 ]}
             />
             <div className="flex-1 p-4">
-                <PDFViewer url={viewerUrl} />
+                {type === "html" ? (
+                    <HTMLViewer url={viewerUrl} />
+                ) : (
+                    <PDFViewer url={viewerUrl} />
+                )}
             </div>
         </>
     );
 }
 
-export default function PDFViewerPage() {
+export default function ViewerPage() {
     return (
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <Suspense fallback={<div className="flex items-center justify-center h-full">Loading PDF...</div>}>
-                    <PDFViewerComponent />
+                <Suspense fallback={<div className="flex items-center justify-center h-full">Loading paper...</div>}>
+                    <ViewerComponent />
                 </Suspense>
             </SidebarInset>
         </SidebarProvider>

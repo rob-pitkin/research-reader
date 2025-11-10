@@ -20,6 +20,7 @@ interface StarredPaper {
     summary: string;
     authors: string[];
     pdf_url: string | null;
+    html_url: string | null;
     published_date: string | null;
     created_at: string;
 }
@@ -79,8 +80,10 @@ export default function StarredPapersPage() {
         }
     };
 
-    const handleViewPDF = (pdfUrl: string, title: string) => {
-        router.push(`/viewer?url=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}`);
+    const handleViewPaper = (paperUrl: string, title: string, type: "pdf" | "html") => {
+        router.push(
+            `/viewer?url=${encodeURIComponent(paperUrl)}&title=${encodeURIComponent(title)}&type=${type}`,
+        );
     };
 
     const formatDate = (dateString: string | null) => {
@@ -117,9 +120,18 @@ export default function StarredPapersPage() {
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => handleViewPDF(paper.pdf_url!, paper.title)}
+                                                    onClick={() => handleViewPaper(paper.pdf_url!, paper.title, "pdf")}
                                                 >
                                                     View PDF
+                                                </Button>
+                                            )}
+                                            {paper.html_url && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleViewPaper(paper.html_url!, paper.title, "html")}
+                                                >
+                                                    View HTML
                                                 </Button>
                                             )}
                                             <StarButton
