@@ -5,49 +5,64 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Bot, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import { toast } from "sonner";
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+import type { TextContent } from "pdfjs-dist/types/src/display/api";
+
+// PDF.js worker from CDN
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url,
+).toString();
 
 interface PDFViewerProps {
     url: string;
+    onPageChange?: (page: number) => void;
+    onTextExtracted?: (text: string) => void;
 }
 
-export function PDFViewer({ url }: PDFViewerProps) {
-    const [numPages, setNumPages] = useState<number>(0);
+export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps) {
+    const [numPages, setNumPages] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState<number>(1);
-    const [scale, setScale] = useState<number>(1.0);
     const [pageText, setPageText] = useState<string>("");
+    const [error, setError] = useState<string | null>(null);
+    const pdfContainerRef = useRef<HTMLDivElement>(null);
     const [selectedText, setSelectedText] = useState<string>("");
     const [selectionPosition, setSelectionPosition] = useState<{
         top: number;
         left: number;
     } | null>(null);
     const [userQuestion, setUserQuestion] = useState<string>("");
-    const pdfContainerRef = useRef<HTMLDivElement>(null);
+    const [scale, setScale] = useState<number>(1);
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);
+        if (onPageChange) {
+            onPageChange(1);
+        }
     }
 
-    interface TextItem {
-        str: string;
-    }
-
-    interface TextContent {
-        items: TextItem[];
+    function onDocumentLoadError(error: Error) {
+        console.error("Error loading PDF:", error);
+        setError(`Failed to load PDF: ${error.message}`);
     }
 
     const onPageText = (text: TextContent) => {
-        setPageText(text.items.map((item: TextItem) => item.str).join(" "));
+        const textItems = text.items.filter((item) => "str" in item) as { str: string }[];
+        setPageText(textItems.map((item) => item.str).join(" "));
     };
 
-    const handleMouseUp = () => {
+    useEffect(() => {
+        if (pageText && onTextExtracted) {
+            onTextExtracted(pageText);
+        }
+    }, [pageText, onTextExtracted]);
+
+    const handleMouseUp = useCallback(() => {
         const selection = window.getSelection();
         const text = selection?.toString() || "";
         if (text.trim()) {
@@ -72,7 +87,7 @@ export function PDFViewer({ url }: PDFViewerProps) {
                 setUserQuestion("");
             }
         }
-    };
+    }, []);
 
     const handleAskAi = async () => {
         if (!selectedText) return;
@@ -115,7 +130,7 @@ export function PDFViewer({ url }: PDFViewerProps) {
     const changePage = (offset: number) => {
         setPageNumber((prevPageNumber) => {
             const newPageNumber = prevPageNumber + offset;
-            return Math.min(Math.max(1, newPageNumber), numPages);
+            return Math.min(Math.max(1, newPageNumber), numPages || 1);
         });
     };
 
@@ -141,17 +156,17 @@ export function PDFViewer({ url }: PDFViewerProps) {
                     <Input
                         type="number"
                         min={1}
-                        max={numPages}
+                        max={numPages || 1}
                         value={pageNumber}
                         onChange={(e) => setPageNumber(Number(e.target.value))}
                         className="w-20 text-center"
                     />
-                    <span className="text-sm text-muted-foreground">of {numPages}</span>
+                    <span className="text-sm text-muted-foreground">of {numPages || "-"}</span>
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={nextPage}
-                        disabled={pageNumber >= numPages}
+                        disabled={pageNumber >= (numPages || 1)}
                     >
                         <ChevronRight className="h-4 w-4" />
                     </Button>

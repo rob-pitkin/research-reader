@@ -20,8 +20,17 @@ export async function GET(request: Request) {
         }
     }
 
+    // Rewrite ArXiv PDF URLs to use export.arxiv.org to avoid rate limiting
+    if (url.includes("arxiv.org/pdf/")) {
+        url = url.replace(/https?:\/\/(www\.)?arxiv\.org\/pdf\//, "https://export.arxiv.org/pdf/");
+    }
+
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        });
 
         if (!response.ok) {
             return new NextResponse(`Failed to fetch content: ${response.statusText}`, {
