@@ -2,25 +2,19 @@
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { PageHeader } from "@/components/page-header";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
-import { toast } from "sonner";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SettingsPage() {
     const supabase = createClient();
@@ -42,9 +36,7 @@ export default function SettingsPage() {
                 setUser(user);
                 setAvatarColor(user.user_metadata?.avatar_color || "#000000");
                 setAvatarGradient(user.user_metadata?.avatar_gradient || false);
-                setAvatarGradientColor2(
-                    user.user_metadata?.avatar_gradient_color2 || "#868f96",
-                );
+                setAvatarGradientColor2(user.user_metadata?.avatar_gradient_color2 || "#868f96");
             }
             setLoading(false);
         };
@@ -94,9 +86,7 @@ export default function SettingsPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Avatar</CardTitle>
-                            <CardDescription>
-                                Customize your avatar's appearance.
-                            </CardDescription>
+                            <CardDescription>Customize your avatar's appearance.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="flex items-center gap-6">
@@ -120,9 +110,7 @@ export default function SettingsPage() {
                                     </div>
                                     {avatarGradient && (
                                         <div className="space-y-2">
-                                            <Label htmlFor="avatar-gradient-color2">
-                                                Color 2
-                                            </Label>
+                                            <Label htmlFor="avatar-gradient-color2">Color 2</Label>
                                             <Input
                                                 id="avatar-gradient-color2"
                                                 type="color"

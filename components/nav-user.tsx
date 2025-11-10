@@ -1,7 +1,6 @@
 "use client";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     DropdownMenu,
@@ -18,8 +17,9 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar";
-import type { User } from "@supabase/supabase-js";
 import { UserAvatar } from "@/components/user-avatar";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 import { ChevronsUpDown, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
