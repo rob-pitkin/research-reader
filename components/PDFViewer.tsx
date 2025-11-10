@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { useChatStore } from "@/hooks/use-chat";
 import { Bot, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -38,6 +40,7 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
     } | null>(null);
     const [userQuestion, setUserQuestion] = useState<string>("");
     const [scale, setScale] = useState<number>(1);
+    const [askAiQuestion, setAskAiQuestion] = useState<string>("");
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);
@@ -62,79 +65,121 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
         }
     }, [pageText, onTextExtracted]);
 
+    const { addMessage } = useChatStore();
+
     const handleMouseUp = useCallback(() => {
         const selection = window.getSelection();
+
         const text = selection?.toString() || "";
+
         if (text.trim()) {
             const range = selection?.getRangeAt(0);
+
             if (range) {
                 const rect = range.getBoundingClientRect();
+
                 const containerRect = pdfContainerRef.current?.getBoundingClientRect();
+
                 if (containerRect) {
                     setSelectionPosition({
                         top: rect.top - containerRect.top,
+
                         left: rect.right - containerRect.left + 10,
                     });
+
                     setSelectedText(text);
                 }
             }
         } else {
             // Only clear selection if the user clicks outside of the pop-up
+
             const popup = document.getElementById("ask-ai-popup");
+
             if (popup && !popup.contains(document.activeElement)) {
                 setSelectedText("");
+
                 setSelectionPosition(null);
+
                 setUserQuestion("");
             }
         }
     }, []);
 
     const handleAskAi = async () => {
-        if (!selectedText) return;
+        if (!selectedText && !askAiQuestion) return;
 
-        const toastId = toast.loading("Asking AI assistant...");
+        const question = userQuestion || askAiQuestion;
+
+        addMessage({
+            id: Date.now().toString(),
+
+            text: question,
+
+            isUser: true,
+        });
+
         try {
             const response = await fetch("/api/ai/ask", {
                 method: "POST",
+
                 headers: { "Content-Type": "application/json" },
+
                 body: JSON.stringify({
-                    text: selectedText,
+                    text: selectedText || pageText,
+
                     context: pageText,
-                    question: userQuestion,
+
+                    question,
+
+                    url,
                 }),
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
+
                 throw new Error(errorData.error || "Failed to get response from AI");
             }
 
             const data = await response.json();
-            toast.success("AI Assistant responded", {
-                id: toastId,
-                description: <div className="text-sm">{data.explanation}</div>,
-                duration: 15000,
+
+            addMessage({
+                id: `${Date.now()}-ai`,
+
+                text: data.explanation,
+
+                isUser: false,
             });
         } catch (error) {
-            toast.error("An error occurred", {
-                id: toastId,
-                description: error instanceof Error ? error.message : "Please try again.",
+            addMessage({
+                id: `${Date.now()}-ai-error`,
+
+                text:
+                    error instanceof Error ? error.message : "An error occurred. Please try again.",
+
+                isUser: false,
             });
         } finally {
             setSelectedText("");
+
             setSelectionPosition(null);
+
             setUserQuestion("");
+
+            setAskAiQuestion("");
         }
     };
 
     const changePage = (offset: number) => {
         setPageNumber((prevPageNumber) => {
             const newPageNumber = prevPageNumber + offset;
+
             return Math.min(Math.max(1, newPageNumber), numPages || 1);
         });
     };
 
     const previousPage = () => changePage(-1);
+
     const nextPage = () => changePage(1);
 
     const handleZoom = (value: number[]) => {
@@ -153,6 +198,7 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
+
                     <Input
                         type="number"
                         min={1}
@@ -161,7 +207,9 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
                         onChange={(e) => setPageNumber(Number(e.target.value))}
                         className="w-20 text-center"
                     />
+
                     <span className="text-sm text-muted-foreground">of {numPages || "-"}</span>
+
                     <Button
                         variant="outline"
                         size="icon"
@@ -171,8 +219,10 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
+
                 <div className="flex items-center gap-4">
                     <ZoomOut className="h-4 w-4 text-muted-foreground" />
+
                     <Slider
                         defaultValue={[1]}
                         min={0.5}
@@ -182,9 +232,11 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
                         onValueChange={handleZoom}
                         className="w-32"
                     />
+
                     <ZoomIn className="h-4 w-4 text-muted-foreground" />
                 </div>
             </div>
+
             <div
                 className="flex-1 overflow-auto p-4 relative"
                 ref={pdfContainerRef}
@@ -199,17 +251,20 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
                         <p className="text-xs text-muted-foreground p-2 border-b">
                             Selected: "{selectedText.substring(0, 50)}..."
                         </p>
+
                         <Input
                             placeholder="Ask a question about the text..."
                             value={userQuestion}
                             onChange={(e) => setUserQuestion(e.target.value)}
                             className="w-full"
                         />
+
                         <Button size="sm" className="w-full gap-2" onClick={handleAskAi}>
                             <Bot className="h-4 w-4" /> Ask AI
                         </Button>
                     </div>
                 )}
+
                 <Document
                     file={url}
                     onLoadSuccess={onDocumentLoadSuccess}

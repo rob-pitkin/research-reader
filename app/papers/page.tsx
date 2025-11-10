@@ -1,12 +1,8 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import { PageHeader } from "@/components/page-header";
 import { StarButton } from "@/components/star-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
@@ -97,73 +93,67 @@ export default function StarredPapersPage() {
     };
 
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <PageHeader breadcrumb={[{ label: "My Papers" }]} />
-                <main className="flex-1 p-4">
-                    {loading ? (
-                        <p>Loading your papers...</p>
-                    ) : papers.length === 0 ? (
-                        <p>You haven't starred any papers yet.</p>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {papers.map((paper) => (
-                                <Card key={paper.paper_id}>
-                                    <CardHeader>
-                                        <CardTitle className="text-lg">{paper.title}</CardTitle>
-                                        <CardDescription>
-                                            {(paper.authors || []).join(", ")} •{" "}
-                                            {formatDate(paper.published_date)}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground line-clamp-2">
-                                            {paper.summary}
-                                        </p>
-                                        <div className="mt-4 flex gap-2">
-                                            {paper.pdf_url && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        handleViewPaper(
-                                                            paper.pdf_url ?? "",
-                                                            paper.title,
-                                                            "pdf",
-                                                        )
-                                                    }
-                                                >
-                                                    View PDF
-                                                </Button>
-                                            )}
-                                            {paper.html_url && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        handleViewPaper(
-                                                            paper.html_url ?? "",
-                                                            paper.title,
-                                                            "html",
-                                                        )
-                                                    }
-                                                >
-                                                    View HTML
-                                                </Button>
-                                            )}
-                                            <StarButton
-                                                isStarred={true}
-                                                onClick={() => handleUnstar(paper.paper_id)}
-                                            />
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
+        <main className="container mx-auto px-4 py-8">
+            {loading ? (
+                <p>Loading your papers...</p>
+            ) : papers.length === 0 ? (
+                <p>You haven't starred any papers yet.</p>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {papers.map((paper) => (
+                        <Card key={paper.paper_id}>
+                            <CardHeader>
+                                <CardTitle className="text-lg">{paper.title}</CardTitle>
+                                <CardDescription>
+                                    {(paper.authors || []).join(", ")} •{" "}
+                                    {formatDate(paper.published_date)}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                    {paper.summary}
+                                </p>
+                                <div className="mt-4 flex gap-2">
+                                    {paper.pdf_url && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleViewPaper(
+                                                    paper.pdf_url ?? "",
+                                                    paper.title,
+                                                    "pdf",
+                                                )
+                                            }
+                                        >
+                                            View PDF
+                                        </Button>
+                                    )}
+                                    {paper.html_url && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleViewPaper(
+                                                    paper.html_url ?? "",
+                                                    paper.title,
+                                                    "html",
+                                                )
+                                            }
+                                        >
+                                            View HTML
+                                        </Button>
+                                    )}
+                                    <StarButton
+                                        isStarred={true}
+                                        onClick={() => handleUnstar(paper.paper_id)}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            )}
+        </main>
     );
 }

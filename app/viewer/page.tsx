@@ -2,9 +2,8 @@
 
 import { HTMLViewer } from "@/components/HTMLViewer";
 import { PDFViewer } from "@/components/PDFViewer";
-import { AppSidebar } from "@/components/app-sidebar";
-import { PageHeader } from "@/components/page-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ChatSidebar } from "@/components/chat-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -25,32 +24,29 @@ function ViewerComponent() {
     }
 
     return (
-        <>
-            <PageHeader
-                breadcrumb={[{ label: "Research Papers", href: "/search" }, { label: title }]}
-            />
-            <div className="flex-1 p-4">
-                {type === "html" ? <HTMLViewer url={viewerUrl} /> : <PDFViewer url={viewerUrl} />}
+        <SidebarProvider>
+            <div className="flex h-screen">
+                <main className="flex-1 overflow-auto">
+                    {type === "html" ? (
+                        <HTMLViewer url={viewerUrl} />
+                    ) : (
+                        <PDFViewer url={viewerUrl} />
+                    )}
+                </main>
+                <ChatSidebar />
             </div>
-        </>
+        </SidebarProvider>
     );
 }
 
 export default function ViewerPage() {
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <Suspense
-                    fallback={
-                        <div className="flex items-center justify-center h-full">
-                            Loading paper...
-                        </div>
-                    }
-                >
-                    <ViewerComponent />
-                </Suspense>
-            </SidebarInset>
-        </SidebarProvider>
+        <Suspense
+            fallback={
+                <div className="flex items-center justify-center h-full">Loading paper...</div>
+            }
+        >
+            <ViewerComponent />
+        </Suspense>
     );
 }

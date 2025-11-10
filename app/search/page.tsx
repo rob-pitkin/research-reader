@@ -1,8 +1,6 @@
 "use client";
 
 import { AddToCollection } from "@/components/add-to-collection";
-import { AppSidebar } from "@/components/app-sidebar";
-import { PageHeader } from "@/components/page-header";
 import { StarButton } from "@/components/star-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,8 +13,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useStarredPapers } from "@/hooks/use-starred-papers";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -153,10 +149,9 @@ function SearchComponent() {
     };
 
     return (
-        <>
-            <PageHeader breadcrumb={[{ label: "Research Papers" }]} />
-
-            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold mb-6">Search Papers</h1>
+            <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-2">
                         <Input
@@ -326,25 +321,18 @@ function SearchComponent() {
                     </div>
                 )}
             </div>
-        </>
+        </div>
     );
 }
 
 export default function SearchPage() {
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <Suspense
-                    fallback={
-                        <div className="flex items-center justify-center h-full">
-                            Loading Search...
-                        </div>
-                    }
-                >
-                    <SearchComponent />
-                </Suspense>
-            </SidebarInset>
-        </SidebarProvider>
+        <Suspense
+            fallback={
+                <div className="flex items-center justify-center h-full">Loading Search...</div>
+            }
+        >
+            <SearchComponent />
+        </Suspense>
     );
 }

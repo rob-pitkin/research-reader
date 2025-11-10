@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { TopNav } from "@/components/top-nav";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -26,21 +27,18 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" suppressHydrationWarning className="h-full">
-            <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col`}
-            >
+        <html lang="en" suppressHydrationWarning>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
                     enableSystem
                     disableTransitionOnChange
                 >
-                    <main className="flex-grow">
-                        {children}
-                        <Toaster />
-                    </main>
-                    <footer className="p-4 text-center text-xs text-muted-foreground">
+                    <TopNav />
+                    {children}
+                    <Toaster />
+                    <footer className="border-t p-4 text-center text-xs text-muted-foreground">
                         Thank you to arXiv for use of its open access interoperability.
                     </footer>
                 </ThemeProvider>

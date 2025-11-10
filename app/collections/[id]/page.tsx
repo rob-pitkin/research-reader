@@ -1,11 +1,7 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Trash2 } from "lucide-react";
@@ -134,66 +130,58 @@ export default function SingleCollectionPage({ params: paramsPromise }: PageProp
     };
 
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <PageHeader
-                    breadcrumb={[
-                        { label: "Collections", href: "/collections" },
-                        { label: collection?.name || "Loading..." },
-                    ]}
-                />
-                <main className="flex-1 p-4">
-                    {loading ? (
-                        <p>Loading papers...</p>
-                    ) : papers.length === 0 ? (
-                        <p>This collection is empty.</p>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {papers.map((paper) => (
-                                <Card key={paper.id}>
-                                    <CardHeader>
-                                        <CardTitle className="text-lg">{paper.title}</CardTitle>
-                                        <CardDescription>
-                                            {(paper.authors || []).join(", ")} •{" "}
-                                            {formatDate(paper.published_date)}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground line-clamp-2">
-                                            {paper.summary}
-                                        </p>
-                                        <div className="mt-4 flex gap-2">
-                                            {paper.pdf_url && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        handleViewPDF(
-                                                            paper.pdf_url ?? "",
-                                                            paper.title,
-                                                        )
-                                                    }
-                                                >
-                                                    View PDF
-                                                </Button>
-                                            )}
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleRemovePaper(paper.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4 mr-2" />
-                                                Remove
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
+        <main className="container mx-auto px-4 py-8">
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold">{collection?.name || "Loading..."}</h1>
+                {collection?.description && (
+                    <p className="text-muted-foreground mt-2">{collection.description}</p>
+                )}
+            </div>
+            {loading ? (
+                <p>Loading papers...</p>
+            ) : papers.length === 0 ? (
+                <p>This collection is empty.</p>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {papers.map((paper) => (
+                        <Card key={paper.id}>
+                            <CardHeader>
+                                <CardTitle className="text-lg">{paper.title}</CardTitle>
+                                <CardDescription>
+                                    {(paper.authors || []).join(", ")} •{" "}
+                                    {formatDate(paper.published_date)}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                    {paper.summary}
+                                </p>
+                                <div className="mt-4 flex gap-2">
+                                    {paper.pdf_url && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleViewPDF(paper.pdf_url ?? "", paper.title)
+                                            }
+                                        >
+                                            View PDF
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRemovePaper(paper.id)}
+                                    >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Remove
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            )}
+        </main>
     );
 }

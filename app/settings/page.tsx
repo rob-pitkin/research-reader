@@ -1,11 +1,9 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
 import { createClient } from "@/lib/supabase/client";
@@ -13,8 +11,6 @@ import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SettingsPage() {
     const supabase = createClient();
@@ -78,65 +74,58 @@ export default function SettingsPage() {
     }
 
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <PageHeader breadcrumb={[{ label: "Settings" }]} />
-                <main className="flex-1 p-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Avatar</CardTitle>
-                            <CardDescription>Customize your avatar's appearance.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="flex items-center gap-6">
-                                <UserAvatar
-                                    email={user.email || ""}
-                                    color={avatarColor}
-                                    gradient={avatarGradient}
-                                    gradientColor2={avatarGradientColor2}
-                                    className="h-24 w-24"
+        <main className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold mb-6">Settings</h1>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Avatar</CardTitle>
+                    <CardDescription>Customize your avatar's appearance.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="flex items-center gap-6">
+                        <UserAvatar
+                            email={user.email || ""}
+                            color={avatarColor}
+                            gradient={avatarGradient}
+                            gradientColor2={avatarGradientColor2}
+                            className="h-24 w-24"
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="avatar-color">Color 1</Label>
+                                <Input
+                                    id="avatar-color"
+                                    type="color"
+                                    value={avatarColor}
+                                    onChange={(e) => setAvatarColor(e.target.value)}
+                                    className="w-24"
                                 />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="avatar-color">Color 1</Label>
-                                        <Input
-                                            id="avatar-color"
-                                            type="color"
-                                            value={avatarColor}
-                                            onChange={(e) => setAvatarColor(e.target.value)}
-                                            className="w-24"
-                                        />
-                                    </div>
-                                    {avatarGradient && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="avatar-gradient-color2">Color 2</Label>
-                                            <Input
-                                                id="avatar-gradient-color2"
-                                                type="color"
-                                                value={avatarGradientColor2}
-                                                onChange={(e) =>
-                                                    setAvatarGradientColor2(e.target.value)
-                                                }
-                                                className="w-24"
-                                            />
-                                        </div>
-                                    )}
+                            </div>
+                            {avatarGradient && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="avatar-gradient-color2">Color 2</Label>
+                                    <Input
+                                        id="avatar-gradient-color2"
+                                        type="color"
+                                        value={avatarGradientColor2}
+                                        onChange={(e) => setAvatarGradientColor2(e.target.value)}
+                                        className="w-24"
+                                    />
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Switch
-                                    id="avatar-gradient"
-                                    checked={avatarGradient}
-                                    onCheckedChange={setAvatarGradient}
-                                />
-                                <Label htmlFor="avatar-gradient">Enable Gradient</Label>
-                            </div>
-                            <Button onClick={handleSave}>Save</Button>
-                        </CardContent>
-                    </Card>
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Switch
+                            id="avatar-gradient"
+                            checked={avatarGradient}
+                            onCheckedChange={setAvatarGradient}
+                        />
+                        <Label htmlFor="avatar-gradient">Enable Gradient</Label>
+                    </div>
+                    <Button onClick={handleSave}>Save</Button>
+                </CardContent>
+            </Card>
+        </main>
     );
 }
