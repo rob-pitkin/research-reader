@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Bot, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -30,14 +30,6 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [pageText, setPageText] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
-    const pdfContainerRef = useRef<HTMLDivElement>(null);
-    const [selectedText, setSelectedText] = useState<string>("");
-    const [selectionPosition, setSelectionPosition] = useState<{
-        top: number;
-        left: number;
-    } | null>(null);
-    const [userQuestion, setUserQuestion] = useState<string>("");
-    const [scale, setScale] = useState<number>(1);
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);
@@ -62,7 +54,7 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
         }
     }, [pageText, onTextExtracted]);
 
-    const handleMouseUp = useCallback(() => {
+    const handleMouseUp = () => {
         const selection = window.getSelection();
         const text = selection?.toString() || "";
         if (text.trim()) {
@@ -87,7 +79,7 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
                 setUserQuestion("");
             }
         }
-    }, []);
+    };
 
     const handleAskAi = async () => {
         if (!selectedText) return;
@@ -130,7 +122,7 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
     const changePage = (offset: number) => {
         setPageNumber((prevPageNumber) => {
             const newPageNumber = prevPageNumber + offset;
-            return Math.min(Math.max(1, newPageNumber), numPages || 1);
+            return Math.min(Math.max(1, newPageNumber), numPages);
         });
     };
 
@@ -156,17 +148,17 @@ export function PDFViewer({ url, onPageChange, onTextExtracted }: PDFViewerProps
                     <Input
                         type="number"
                         min={1}
-                        max={numPages || 1}
+                        max={numPages}
                         value={pageNumber}
                         onChange={(e) => setPageNumber(Number(e.target.value))}
                         className="w-20 text-center"
                     />
-                    <span className="text-sm text-muted-foreground">of {numPages || "-"}</span>
+                    <span className="text-sm text-muted-foreground">of {numPages}</span>
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={nextPage}
-                        disabled={pageNumber >= (numPages || 1)}
+                        disabled={pageNumber >= numPages}
                     >
                         <ChevronRight className="h-4 w-4" />
                     </Button>
