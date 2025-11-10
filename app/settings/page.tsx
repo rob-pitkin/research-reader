@@ -14,6 +14,14 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+
 export default function SettingsPage() {
     const supabase = createClient();
     const router = useRouter();
@@ -21,6 +29,7 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [avatarColor, setAvatarColor] = useState("#000000");
     const [avatarGradient, setAvatarGradient] = useState(false);
+    const [avatarGradientColor2, setAvatarGradientColor2] = useState("#868f96");
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -33,6 +42,9 @@ export default function SettingsPage() {
                 setUser(user);
                 setAvatarColor(user.user_metadata?.avatar_color || "#000000");
                 setAvatarGradient(user.user_metadata?.avatar_gradient || false);
+                setAvatarGradientColor2(
+                    user.user_metadata?.avatar_gradient_color2 || "#868f96",
+                );
             }
             setLoading(false);
         };
@@ -47,6 +59,7 @@ export default function SettingsPage() {
             data: {
                 avatar_color: avatarColor,
                 avatar_gradient: avatarGradient,
+                avatar_gradient_color2: avatarGradientColor2,
                 avatar_url: null, // Clear the avatar_url so we use the new color avatar
             },
         });
@@ -78,39 +91,62 @@ export default function SettingsPage() {
             <SidebarInset>
                 <PageHeader breadcrumb={[{ label: "Settings" }]} />
                 <main className="flex-1 p-4">
-                    <div className="space-y-8">
-                        <div className="space-y-4">
-                            <h2 className="text-2xl font-bold">Avatar</h2>
-                            <div className="flex items-center gap-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Avatar</CardTitle>
+                            <CardDescription>
+                                Customize your avatar's appearance.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="flex items-center gap-6">
                                 <UserAvatar
                                     email={user.email || ""}
                                     color={avatarColor}
                                     gradient={avatarGradient}
+                                    gradientColor2={avatarGradientColor2}
                                     className="h-24 w-24"
                                 />
-                                <div className="space-y-2">
-                                    <div>
-                                        <Label htmlFor="avatar-color">Background Color</Label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="avatar-color">Color 1</Label>
                                         <Input
                                             id="avatar-color"
                                             type="color"
                                             value={avatarColor}
                                             onChange={(e) => setAvatarColor(e.target.value)}
+                                            className="w-24"
                                         />
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Switch
-                                            id="avatar-gradient"
-                                            checked={avatarGradient}
-                                            onCheckedChange={setAvatarGradient}
-                                        />
-                                        <Label htmlFor="avatar-gradient">Enable Gradient</Label>
-                                    </div>
+                                    {avatarGradient && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="avatar-gradient-color2">
+                                                Color 2
+                                            </Label>
+                                            <Input
+                                                id="avatar-gradient-color2"
+                                                type="color"
+                                                value={avatarGradientColor2}
+                                                onChange={(e) =>
+                                                    setAvatarGradientColor2(e.target.value)
+                                                }
+                                                className="w-24"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+                            <div className="flex items-center gap-2">
+                                <Switch
+                                    id="avatar-gradient"
+                                    checked={avatarGradient}
+                                    onCheckedChange={setAvatarGradient}
+                                />
+                                <Label htmlFor="avatar-gradient">Enable Gradient</Label>
+                            </div>
                             <Button onClick={handleSave}>Save</Button>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </main>
             </SidebarInset>
         </SidebarProvider>

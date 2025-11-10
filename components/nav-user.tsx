@@ -38,6 +38,7 @@ export function NavUser({ user }: { user: User }) {
     const avatarUrl = user.user_metadata?.avatar_url;
     const avatarColor = user.user_metadata?.avatar_color || "#000000";
     const avatarGradient = user.user_metadata?.avatar_gradient || false;
+    const avatarGradientColor2 = user.user_metadata?.avatar_gradient_color2 || "#868f96";
 
     return (
         <SidebarMenu>
@@ -60,6 +61,7 @@ export function NavUser({ user }: { user: User }) {
                                     email={user.email || ""}
                                     color={avatarColor}
                                     gradient={avatarGradient}
+                                    gradientColor2={avatarGradientColor2}
                                 />
                             )}
                             <div className="grid flex-1 text-left text-sm leading-tight">
@@ -89,6 +91,7 @@ export function NavUser({ user }: { user: User }) {
                                         email={user.email || ""}
                                         color={avatarColor}
                                         gradient={avatarGradient}
+                                        gradientColor2={avatarGradientColor2}
                                     />
                                 )}
                                 <div className="grid flex-1 text-left text-sm leading-tight">
