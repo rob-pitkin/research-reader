@@ -13,7 +13,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Check, FolderPlus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CreateCollectionDialog } from "./create-collection-dialog";
 
@@ -71,7 +71,7 @@ export function AddToCollection({ user, paper }: AddToCollectionProps) {
             return;
         }
         setPaperInCollections(paperStatusData.map((item) => item.collection_id));
-    }, [user, supabase, paper.id, setCollections, setPaperInCollections, toast]);
+    }, [user, supabase, paper.id]);
 
     useEffect(() => {
         if (isOpen) {
