@@ -33,8 +33,8 @@ interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-export default async function SingleCollectionPage({ params: paramsPromise }: PageProps) {
-    const params = await paramsPromise;
+export default function SingleCollectionPage({ params: paramsPromise }: PageProps) {
+    const [params, setParams] = useState<{ id: string } | null>(null);
     const supabase = createClient();
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
@@ -42,10 +42,16 @@ export default async function SingleCollectionPage({ params: paramsPromise }: Pa
     const [papers, setPapers] = useState<CollectionPaper[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const collectionId = params.id;
+    useEffect(() => {
+        const resolveParamsAndFetch = async () => {
+            const resolvedParams = await paramsPromise;
+            setParams(resolvedParams);
+        };
+        resolveParamsAndFetch();
+    }, [paramsPromise]);
 
     const fetchCollectionDetails = useCallback(
-        async (userId: string) => {
+        async (userId: string, collectionId: string) => {
             const { data, error } = await supabase
                 .from("collections")
                 .select("*")
@@ -60,11 +66,11 @@ export default async function SingleCollectionPage({ params: paramsPromise }: Pa
                 setCollection(data);
             }
         },
-        [supabase, collectionId, router],
+        [supabase, router],
     );
 
     const fetchPapersInCollection = useCallback(
-        async (userId: string) => {
+        async (userId: string, collectionId: string) => {
             const { data, error } = await supabase
                 .from("collection_papers")
                 .select("*")
@@ -79,11 +85,12 @@ export default async function SingleCollectionPage({ params: paramsPromise }: Pa
                 setPapers(data as CollectionPaper[]);
             }
         },
-        [supabase, collectionId],
+        [supabase],
     );
 
     useEffect(() => {
         const getInitialData = async () => {
+            if (!params) return;
             setLoading(true);
             const {
                 data: { user },
@@ -92,13 +99,13 @@ export default async function SingleCollectionPage({ params: paramsPromise }: Pa
                 router.push("/login");
             } else {
                 setUser(user);
-                await fetchCollectionDetails(user.id);
-                await fetchPapersInCollection(user.id);
+                await fetchCollectionDetails(user.id, params.id);
+                await fetchPapersInCollection(user.id, params.id);
             }
             setLoading(false);
         };
         getInitialData();
-    }, [supabase, router, fetchCollectionDetails, fetchPapersInCollection]);
+    }, [params, supabase, router, fetchCollectionDetails, fetchPapersInCollection]);
 
     const handleRemovePaper = async (paperId: number) => {
         if (!user) return;
@@ -111,7 +118,9 @@ export default async function SingleCollectionPage({ params: paramsPromise }: Pa
             toast.error("Failed to remove paper.");
             console.error(error);
             // Re-fetch if error
-            fetchPapersInCollection(user.id);
+            if (params) {
+                fetchPapersInCollection(user.id, params.id);
+            }
         }
     };
 
