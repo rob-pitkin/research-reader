@@ -21,13 +21,9 @@ export function UserAvatar({ email, color, gradient, gradientColor2, className }
             : undefined,
     };
 
-    // Determine font size based on avatar size from className
-    const isLarge = className?.includes("h-24") || className?.includes("w-24");
-    const textSize = isLarge ? "text-4xl" : "text-sm";
-
     return (
-        <Avatar className={cn("h-8 w-8", className)} style={style}>
-            <AvatarFallback className={cn("bg-transparent text-white", textSize)}>
+        <Avatar className={cn("h-8 w-8 rounded-lg", className)} style={style}>
+            <AvatarFallback className="rounded-lg bg-transparent text-white text-3xl">
                 {fallbackText}
             </AvatarFallback>
         </Avatar>
