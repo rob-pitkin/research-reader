@@ -10,7 +10,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface StarredPaper {
     id: number;
@@ -32,25 +32,30 @@ export default function StarredPapersPage() {
     const [papers, setPapers] = useState<StarredPaper[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchStarredPapers = useCallback(async (userId: string) => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from("papers")
-            .select("*")
-            .eq("user_id", userId)
-            .order("created_at", { ascending: false });
+    const fetchStarredPapers = useCallback(
+        async (userId: string) => {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from("papers")
+                .select("*")
+                .eq("user_id", userId)
+                .order("created_at", { ascending: false });
 
-        if (error) {
-            console.error("Error fetching starred papers:", error);
-        } else {
-            setPapers(data as StarredPaper[]);
-        }
-        setLoading(false);
-    }, [supabase]);
+            if (error) {
+                console.error("Error fetching starred papers:", error);
+            } else {
+                setPapers(data as StarredPaper[]);
+            }
+            setLoading(false);
+        },
+        [supabase],
+    );
 
     useEffect(() => {
         const getUserAndPapers = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
             if (!user) {
                 router.push("/login");
             } else {
@@ -108,7 +113,8 @@ export default function StarredPapersPage() {
                                     <CardHeader>
                                         <CardTitle className="text-lg">{paper.title}</CardTitle>
                                         <CardDescription>
-                                            {(paper.authors || []).join(", ")} • {formatDate(paper.published_date)}
+                                            {(paper.authors || []).join(", ")} •{" "}
+                                            {formatDate(paper.published_date)}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -120,7 +126,13 @@ export default function StarredPapersPage() {
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => handleViewPaper(paper.pdf_url!, paper.title, "pdf")}
+                                                    onClick={() =>
+                                                        handleViewPaper(
+                                                            paper.pdf_url ?? "",
+                                                            paper.title,
+                                                            "pdf",
+                                                        )
+                                                    }
                                                 >
                                                     View PDF
                                                 </Button>
@@ -129,7 +141,13 @@ export default function StarredPapersPage() {
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => handleViewPaper(paper.html_url!, paper.title, "html")}
+                                                    onClick={() =>
+                                                        handleViewPaper(
+                                                            paper.html_url ?? "",
+                                                            paper.title,
+                                                            "html",
+                                                        )
+                                                    }
                                                 >
                                                     View HTML
                                                 </Button>

@@ -1,8 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { useState, useEffect, useCallback } from "react";
 import type { User } from "@supabase/supabase-js";
+import { useCallback, useEffect, useState } from "react";
 
 // Assuming Paper interface is defined in a central types file
 // For now, defining it here based on search page structure

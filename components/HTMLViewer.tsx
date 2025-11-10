@@ -5,11 +5,5 @@ interface HTMLViewerProps {
 }
 
 export function HTMLViewer({ url }: HTMLViewerProps) {
-    return (
-        <iframe
-            src={url}
-            className="w-full h-full border-0"
-            title="Paper Viewer"
-        />
-    );
+    return <iframe src={url} className="w-full h-full border-0" title="Paper Viewer" />;
 }

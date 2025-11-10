@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Bot, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -24,7 +24,10 @@ export function PDFViewer({ url }: PDFViewerProps) {
     const [scale, setScale] = useState<number>(1.0);
     const [pageText, setPageText] = useState<string>("");
     const [selectedText, setSelectedText] = useState<string>("");
-    const [selectionPosition, setSelectionPosition] = useState<{ top: number, left: number } | null>(null);
+    const [selectionPosition, setSelectionPosition] = useState<{
+        top: number;
+        left: number;
+    } | null>(null);
     const [userQuestion, setUserQuestion] = useState<string>("");
     const pdfContainerRef = useRef<HTMLDivElement>(null);
 
@@ -32,8 +35,16 @@ export function PDFViewer({ url }: PDFViewerProps) {
         setNumPages(numPages);
     }
 
-    const onPageText = (text: any) => {
-        setPageText(text.items.map((item: any) => item.str).join(" "));
+    interface TextItem {
+        str: string;
+    }
+
+    interface TextContent {
+        items: TextItem[];
+    }
+
+    const onPageText = (text: TextContent) => {
+        setPageText(text.items.map((item: TextItem) => item.str).join(" "));
     };
 
     const handleMouseUp = () => {
@@ -71,7 +82,11 @@ export function PDFViewer({ url }: PDFViewerProps) {
             const response = await fetch("/api/ai/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: selectedText, context: pageText, question: userQuestion }),
+                body: JSON.stringify({
+                    text: selectedText,
+                    context: pageText,
+                    question: userQuestion,
+                }),
             });
 
             if (!response.ok) {
@@ -155,7 +170,11 @@ export function PDFViewer({ url }: PDFViewerProps) {
                     <ZoomIn className="h-4 w-4 text-muted-foreground" />
                 </div>
             </div>
-            <div className="flex-1 overflow-auto p-4 relative" ref={pdfContainerRef} onMouseUp={handleMouseUp}>
+            <div
+                className="flex-1 overflow-auto p-4 relative"
+                ref={pdfContainerRef}
+                onMouseUp={handleMouseUp}
+            >
                 {selectedText && selectionPosition && (
                     <div
                         id="ask-ai-popup"
@@ -171,11 +190,7 @@ export function PDFViewer({ url }: PDFViewerProps) {
                             onChange={(e) => setUserQuestion(e.target.value)}
                             className="w-full"
                         />
-                        <Button
-                            size="sm"
-                            className="w-full gap-2"
-                            onClick={handleAskAi}
-                        >
+                        <Button size="sm" className="w-full gap-2" onClick={handleAskAi}>
                             <Bot className="h-4 w-4" /> Ask AI
                         </Button>
                     </div>

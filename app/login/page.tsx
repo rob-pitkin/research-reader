@@ -3,9 +3,9 @@
 import { createClient } from "@/lib/supabase/client";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
+import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
 
 export default function LoginPage() {
     const supabase = createClient();
@@ -19,7 +19,9 @@ export default function LoginPage() {
             }
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session) {
                 router.push("/dashboard");
             }

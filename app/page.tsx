@@ -77,8 +77,8 @@ export default function Home() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-muted-foreground">
-                                Seamlessly browse and import papers using our API
-                                integration. Stay up to date with the latest research in your field.
+                                Seamlessly browse and import papers using our API integration. Stay
+                                up to date with the latest research in your field.
                             </p>
                         </CardContent>
                     </Card>

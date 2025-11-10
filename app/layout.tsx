@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
     title: "Research Reader",
-    description: "Your AI-powered research companion. Save, read, and understand research papers with ease.",
+    description:
+        "Your AI-powered research companion. Save, read, and understand research papers with ease.",
 };
 
 export default function RootLayout({
@@ -26,7 +27,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning className="h-full">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col`}>
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col`}
+            >
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"

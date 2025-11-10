@@ -6,8 +6,8 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarMenu,
-    SidebarMenuItem,
     SidebarMenuButton,
+    SidebarMenuItem,
     SidebarRail,
 } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/client";
@@ -15,7 +15,7 @@ import type { User } from "@supabase/supabase-js";
 import { BookOpen, Bot, LogIn, Settings2, SquareTerminal } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const navLinks = [
     {

@@ -20,7 +20,12 @@ interface CreateCollectionDialogProps {
     user: User;
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    onCreateSuccess: (collection: { id: string; name: string; description: string | null; created_at: string }) => void;
+    onCreateSuccess: (collection: {
+        id: string;
+        name: string;
+        description: string | null;
+        created_at: string;
+    }) => void;
 }
 
 export function CreateCollectionDialog({

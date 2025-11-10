@@ -27,17 +27,10 @@ function ViewerComponent() {
     return (
         <>
             <PageHeader
-                breadcrumb={[
-                    { label: "Research Papers", href: "/search" },
-                    { label: title },
-                ]}
+                breadcrumb={[{ label: "Research Papers", href: "/search" }, { label: title }]}
             />
             <div className="flex-1 p-4">
-                {type === "html" ? (
-                    <HTMLViewer url={viewerUrl} />
-                ) : (
-                    <PDFViewer url={viewerUrl} />
-                )}
+                {type === "html" ? <HTMLViewer url={viewerUrl} /> : <PDFViewer url={viewerUrl} />}
             </div>
         </>
     );
@@ -48,7 +41,13 @@ export default function ViewerPage() {
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <Suspense fallback={<div className="flex items-center justify-center h-full">Loading paper...</div>}>
+                <Suspense
+                    fallback={
+                        <div className="flex items-center justify-center h-full">
+                            Loading paper...
+                        </div>
+                    }
+                >
                     <ViewerComponent />
                 </Suspense>
             </SidebarInset>

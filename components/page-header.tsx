@@ -51,9 +51,7 @@ export function PageHeader({ breadcrumb, children }: PageHeaderProps) {
                         </BreadcrumbList>
                     </Breadcrumb>
                 </div>
-                <div className="flex items-center gap-2">
-                    {children}
-                </div>
+                <div className="flex items-center gap-2">{children}</div>
             </div>
         </header>
     );

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,7 +10,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Check, FolderPlus } from "lucide-react";
@@ -43,7 +43,7 @@ export function AddToCollection({ user, paper }: AddToCollectionProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-    const fetchCollectionsAndPaperStatus = async () => {
+    const fetchCollectionsAndPaperStatus = useCallback(async () => {
         if (!user) return;
 
         // Fetch user's collections
@@ -71,13 +71,13 @@ export function AddToCollection({ user, paper }: AddToCollectionProps) {
             return;
         }
         setPaperInCollections(paperStatusData.map((item) => item.collection_id));
-    };
+    }, [user, supabase, paper.id, setCollections, setPaperInCollections, toast]);
 
     useEffect(() => {
         if (isOpen) {
             fetchCollectionsAndPaperStatus();
         }
-    }, [isOpen, user, paper.id]);
+    }, [isOpen, fetchCollectionsAndPaperStatus]);
 
     const handleAddToCollection = async (collectionId: string) => {
         const { error } = await supabase.from("collection_papers").insert({
@@ -92,7 +92,8 @@ export function AddToCollection({ user, paper }: AddToCollectionProps) {
         });
 
         if (error) {
-            if (error.code === "23505") { // Unique constraint violation
+            if (error.code === "23505") {
+                // Unique constraint violation
                 toast.info("This paper is already in that collection.");
             } else {
                 toast.error("Failed to add paper to collection.");

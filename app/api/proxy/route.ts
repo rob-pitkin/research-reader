@@ -9,8 +9,8 @@ export async function GET(request: Request) {
     }
 
     // Decode URL until it's fully decoded (handles double/triple encoding)
-    let previousUrl = '';
-    while (url !== previousUrl && url.includes('%')) {
+    let previousUrl = "";
+    while (url !== previousUrl && url.includes("%")) {
         previousUrl = url;
         try {
             url = decodeURIComponent(url);
@@ -44,54 +44,62 @@ export async function GET(request: Request) {
 
         // Calculate base path for relative URLs
         // Check if the last path segment has a file extension (like .html, .css, .js)
-        const lastSegment = url.substring(url.lastIndexOf('/') + 1);
-        const hasFileExtension = /\.(html?|css|js|json|xml|txt|pdf|png|jpg|jpeg|gif|svg|woff2?|ttf|eot)(\?|#|$)/i.test(lastSegment);
+        const lastSegment = url.substring(url.lastIndexOf("/") + 1);
+        const hasFileExtension =
+            /\.(html?|css|js|json|xml|txt|pdf|png|jpg|jpeg|gif|svg|woff2?|ttf|eot)(\?|#|$)/i.test(
+                lastSegment,
+            );
 
         let basePath = url;
         if (!hasFileExtension) {
             // No file extension means it's a directory or path-based URL
-            basePath = url.endsWith('/') ? url : url + '/';
+            basePath = url.endsWith("/") ? url : `${url}/`;
         } else {
             // Has extension, get the directory
-            basePath = url.substring(0, url.lastIndexOf('/') + 1);
+            basePath = url.substring(0, url.lastIndexOf("/") + 1);
         }
 
         const rewriteUrl = (urlPath: string): string => {
             // Skip data URIs, javascript:, mailto:, and anchors
-            if (urlPath.startsWith('data:') ||
-                urlPath.startsWith('javascript:') ||
-                urlPath.startsWith('mailto:') ||
-                urlPath.startsWith('#')) {
+            if (
+                urlPath.startsWith("data:") ||
+                urlPath.startsWith("javascript:") ||
+                urlPath.startsWith("mailto:") ||
+                urlPath.startsWith("#")
+            ) {
                 return urlPath;
             }
 
             // If already proxied, skip
-            if (urlPath.includes('/api/proxy?url=')) {
+            if (urlPath.includes("/api/proxy?url=")) {
                 return urlPath;
             }
 
             // Handle URLs with fragments (anchors like "page.html#section")
-            let fragment = '';
+            let fragment = "";
             let urlWithoutFragment = urlPath;
-            if (urlPath.includes('#')) {
-                const parts = urlPath.split('#');
+            if (urlPath.includes("#")) {
+                const parts = urlPath.split("#");
                 urlWithoutFragment = parts[0];
-                fragment = '#' + parts[1];
+                fragment = `#${parts[1]}`;
 
                 // If it's just a different page on the same site with an anchor, keep it relative
-                if (!urlWithoutFragment || urlWithoutFragment === '') {
+                if (!urlWithoutFragment || urlWithoutFragment === "") {
                     return urlPath; // Just "#anchor"
                 }
             }
 
-            let fullUrl;
+            let fullUrl: string;
 
             // Handle different URL types
-            if (urlWithoutFragment.startsWith('http://') || urlWithoutFragment.startsWith('https://')) {
+            if (
+                urlWithoutFragment.startsWith("http://") ||
+                urlWithoutFragment.startsWith("https://")
+            ) {
                 fullUrl = urlWithoutFragment;
-            } else if (urlWithoutFragment.startsWith('//')) {
-                fullUrl = 'https:' + urlWithoutFragment;
-            } else if (urlWithoutFragment.startsWith('/')) {
+            } else if (urlWithoutFragment.startsWith("//")) {
+                fullUrl = `https:${urlWithoutFragment}`;
+            } else if (urlWithoutFragment.startsWith("/")) {
                 fullUrl = origin + urlWithoutFragment;
             } else {
                 fullUrl = basePath + urlWithoutFragment;
@@ -103,27 +111,30 @@ export async function GET(request: Request) {
                     return fragment; // Just an anchor, no URL part
                 }
 
-                const currentDoc = url.split('#')[0].split('?')[0].replace(/\/$/, ''); // Current document without anchor, query, or trailing slash
-                const targetDoc = fullUrl.split('#')[0].split('?')[0].replace(/\/$/, ''); // Target document without anchor, query, or trailing slash
+                const currentDoc = url.split("#")[0].split("?")[0].replace(/\/$/, ""); // Current document without anchor, query, or trailing slash
+                const targetDoc = fullUrl.split("#")[0].split("?")[0].replace(/\/$/, ""); // Target document without anchor, query, or trailing slash
 
                 // Normalize both URLs by removing version numbers for comparison
                 const normalizeUrl = (u: string) => {
                     // Remove version numbers like v1, v2, etc. and any trailing slashes
-                    return u.replace(/v\d+$/, '').replace(/\/$/, '');
+                    return u.replace(/v\d+$/, "").replace(/\/$/, "");
                 };
 
                 const currentNormalized = normalizeUrl(currentDoc);
                 const targetNormalized = normalizeUrl(targetDoc);
 
                 // Check if they're the same document
-                const isSameDoc = currentNormalized === targetNormalized ||
-                                  currentDoc === targetDoc ||
-                                  // Check if one is a prefix of the other (handles version differences)
-                                  currentNormalized === targetDoc ||
-                                  targetNormalized === currentDoc;
+                const isSameDoc =
+                    currentNormalized === targetNormalized ||
+                    currentDoc === targetDoc ||
+                    // Check if one is a prefix of the other (handles version differences)
+                    currentNormalized === targetDoc ||
+                    targetNormalized === currentDoc;
 
                 if (isSameDoc) {
-                    console.log(`Same document detected: ${urlPath} -> ${fragment} (current: ${currentDoc}, target: ${targetDoc})`);
+                    console.log(
+                        `Same document detected: ${urlPath} -> ${fragment} (current: ${currentDoc}, target: ${targetDoc})`,
+                    );
                     return fragment; // Same document, just use the anchor
                 }
             }
@@ -150,7 +161,7 @@ export async function GET(request: Request) {
                         }
                     }
                     return rewritten;
-                }
+                },
             );
 
             console.log(`Total rewrites: ${rewriteCount}`);
@@ -165,22 +176,16 @@ export async function GET(request: Request) {
             console.log(`Processing CSS from: ${url}`);
 
             // Rewrite @import statements
-            css = css.replace(
-                /@import\s+["']([^"']+)["']/gi,
-                (match, urlPath) => {
-                    const rewritten = rewriteUrl(urlPath);
-                    console.log(`CSS @import: ${match} -> @import "${rewritten}"`);
-                    return `@import "${rewritten}"`;
-                }
-            );
+            css = css.replace(/@import\s+["']([^"']+)["']/gi, (match, urlPath) => {
+                const rewritten = rewriteUrl(urlPath);
+                console.log(`CSS @import: ${match} -> @import "${rewritten}"`);
+                return `@import "${rewritten}"`;
+            });
 
             // Rewrite url() in CSS
-            css = css.replace(
-                /url\(["']?([^"')]+)["']?\)/gi,
-                (match, urlPath) => {
-                    return `url("${rewriteUrl(urlPath)}")`;
-                }
-            );
+            css = css.replace(/url\(["']?([^"')]+)["']?\)/gi, (match, urlPath) => {
+                return `url("${rewriteUrl(urlPath)}")`;
+            });
 
             return new NextResponse(css, { headers });
         }

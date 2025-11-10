@@ -59,7 +59,7 @@ export async function GET(request: Request) {
                     ...paper,
                     htmlUrl: hasHtml ? htmlUrl : undefined,
                 };
-            })
+            }),
         );
 
         return NextResponse.json(papersWithHtml);

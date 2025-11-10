@@ -178,6 +178,6 @@ body {
 
 /* Custom selection color for dark mode */
 .dark ::selection {
-  background-color: #0070f3;
-  color: #fff;
+    background-color: #0070f3;
+    color: #fff;
 }

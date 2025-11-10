@@ -1,14 +1,11 @@
 "use client";
 
+import { AppSidebar } from "@/components/app-sidebar";
 import { CreateCollectionDialog } from "@/components/create-collection-dialog";
 import { PageHeader } from "@/components/page-header";
-import { AppSidebar } from "@/components/app-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/client";
@@ -16,7 +13,7 @@ import type { User } from "@supabase/supabase-js";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface Collection {
@@ -34,25 +31,30 @@ export default function CollectionsPage() {
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const fetchCollections = useCallback(async (userId: string) => {
-        const { data, error } = await supabase
-            .from("collections")
-            .select("*")
-            .eq("user_id", userId)
-            .order("created_at", { ascending: false });
+    const fetchCollections = useCallback(
+        async (userId: string) => {
+            const { data, error } = await supabase
+                .from("collections")
+                .select("*")
+                .eq("user_id", userId)
+                .order("created_at", { ascending: false });
 
-        if (error) {
-            console.error("Error fetching collections:", error);
-            toast.error("Failed to fetch your collections.");
-        } else {
-            setCollections(data as Collection[]);
-        }
-    }, [supabase]);
+            if (error) {
+                console.error("Error fetching collections:", error);
+                toast.error("Failed to fetch your collections.");
+            } else {
+                setCollections(data as Collection[]);
+            }
+        },
+        [supabase],
+    );
 
     useEffect(() => {
         const getUserAndCollections = async () => {
             setLoading(true);
-            const { data: { user } } = await supabase.auth.getUser();
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
             if (!user) {
                 router.push("/login");
             } else {
@@ -73,7 +75,9 @@ export default function CollectionsPage() {
             <AppSidebar />
             <SidebarInset>
                 <PageHeader breadcrumb={[{ label: "Collections" }]}>
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}> {/* <-- Dialog starts here */}
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        {" "}
+                        {/* <-- Dialog starts here */}
                         <DialogTrigger asChild>
                             <Button onClick={() => setIsDialogOpen(true)}>
                                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -88,7 +92,8 @@ export default function CollectionsPage() {
                                 onCreateSuccess={handleCreateSuccess}
                             />
                         )}
-                    </Dialog> {/* <-- Dialog ends here */}
+                    </Dialog>{" "}
+                    {/* <-- Dialog ends here */}
                 </PageHeader>
                 <main className="flex-1 p-4">
                     {loading ? (
@@ -113,7 +118,10 @@ export default function CollectionsPage() {
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-xs text-muted-foreground">
-                                                Created on {new Date(collection.created_at).toLocaleDateString()}
+                                                Created on{" "}
+                                                {new Date(
+                                                    collection.created_at,
+                                                ).toLocaleDateString()}
                                             </p>
                                         </CardContent>
                                     </Card>
