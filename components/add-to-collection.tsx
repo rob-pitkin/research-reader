@@ -23,7 +23,7 @@ interface Paper {
     authors: string[];
     summary: string;
     published: string;
-    links: { type: string; href: string }[];
+    links: { href: string }[];
 }
 
 interface Collection {
@@ -87,7 +87,7 @@ export function AddToCollection({ user, paper }: AddToCollectionProps) {
             title: paper.title,
             summary: paper.summary,
             authors: paper.authors,
-            pdf_url: paper.links.find((link) => link.type === "application/pdf")?.href,
+            pdf_url: paper.links.find((link) => link.href?.includes("/pdf/"))?.href || null,
             published_date: paper.published,
         });
 

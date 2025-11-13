@@ -31,7 +31,7 @@ interface Paper {
     categories: string[];
     summary: string;
     published: string;
-    links: { type: string; href: string }[];
+    links: { href: string }[];
     htmlUrl?: string;
 }
 
@@ -244,7 +244,7 @@ function SearchComponent() {
                                         size="sm"
                                         onClick={() => {
                                             const pdfLink = paper.links.find(
-                                                (link) => link.type === "application/pdf",
+                                                (link) => link.href?.includes("/pdf/"),
                                             );
                                             if (pdfLink) {
                                                 handleViewPaper(pdfLink.href, paper.title, "pdf");
@@ -274,7 +274,7 @@ function SearchComponent() {
                                         <a
                                             href={
                                                 paper.links.find(
-                                                    (link) => link.type === "text/html",
+                                                    (link) => link.href?.includes("/abs/"),
                                                 )?.href ?? ""
                                             }
                                             target="_blank"

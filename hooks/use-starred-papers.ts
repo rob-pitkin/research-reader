@@ -12,7 +12,7 @@ interface Paper {
     authors: string[];
     summary: string;
     published: string;
-    links: { type: string; href: string }[];
+    links: { href: string }[];
     htmlUrl?: string;
 }
 
@@ -47,14 +47,17 @@ export function useStarredPapers(user: User | null) {
 
         setStarredPaperIds((prev) => [...prev, paper.id]);
 
+        const pdfUrl = paper.links.find((link) => link.href?.includes("/pdf/"))?.href || null;
+        const htmlUrl = paper.htmlUrl || null;
+
         const { error } = await supabase.from("papers").insert({
             user_id: user.id,
             paper_id: paper.id,
             title: paper.title,
             summary: paper.summary,
             authors: paper.authors,
-            pdf_url: paper.links.find((link) => link.type === "application/pdf")?.href,
-            html_url: paper.htmlUrl,
+            pdf_url: pdfUrl,
+            html_url: htmlUrl,
             published_date: paper.published,
         });
 
